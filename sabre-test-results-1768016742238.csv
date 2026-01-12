@@ -1,0 +1,73 @@
+Method,Location,Version,Radius,Optional Fields,Response Time,Hotels Found
+RefPoint,Miami,5.1.0,10,true,3770,37
+GeoCode,Miami,5.1.0,10,true,2679,37
+RefPoint,Miami,5.1.0,20,true,3856,35
+GeoCode,Miami,5.1.0,20,true,3575,36
+RefPoint,Miami,5.1.0,50,true,3538,36
+GeoCode,Miami,5.1.0,50,true,3162,36
+RefPoint,Miami,4.1.0,10,true,3150,37
+GeoCode,Miami,4.1.0,10,true,2885,37
+RefPoint,Miami,4.1.0,20,true,3073,35
+GeoCode,Miami,4.1.0,20,true,3620,36
+RefPoint,Miami,4.1.0,50,true,3575,36
+GeoCode,Miami,4.1.0,50,true,3981,36
+RefPoint,Miami,3.0.0,10,true,3186,37
+GeoCode,Miami,3.0.0,10,true,3502,37
+RefPoint,Miami,3.0.0,20,true,3933,35
+GeoCode,Miami,3.0.0,20,true,2470,36
+RefPoint,Miami,3.0.0,50,true,3241,36
+GeoCode,Miami,3.0.0,50,true,2983,36
+RefPoint,New York JFK,5.1.0,10,true,3209,20
+GeoCode,New York JFK,5.1.0,10,true,3054,20
+RefPoint,New York JFK,5.1.0,20,true,4406,70
+GeoCode,New York JFK,5.1.0,20,true,3245,62
+RefPoint,New York JFK,5.1.0,50,true,3621,65
+GeoCode,New York JFK,5.1.0,50,true,2979,63
+RefPoint,New York JFK,4.1.0,10,true,2913,20
+GeoCode,New York JFK,4.1.0,10,true,3049,20
+RefPoint,New York JFK,4.1.0,20,true,3665,66
+GeoCode,New York JFK,4.1.0,20,true,3793,63
+RefPoint,New York JFK,4.1.0,50,true,3252,68
+GeoCode,New York JFK,4.1.0,50,true,2925,64
+RefPoint,New York JFK,3.0.0,10,true,3216,20
+GeoCode,New York JFK,3.0.0,10,true,3090,20
+RefPoint,New York JFK,3.0.0,20,true,3095,62
+GeoCode,New York JFK,3.0.0,20,true,5049,64
+RefPoint,New York JFK,3.0.0,50,true,4642,67
+GeoCode,New York JFK,3.0.0,50,true,3259,67
+RefPoint,Los Angeles,5.1.0,10,true,2826,47
+GeoCode,Los Angeles,5.1.0,10,true,3269,47
+RefPoint,Los Angeles,5.1.0,20,true,3542,51
+GeoCode,Los Angeles,5.1.0,20,true,2982,51
+RefPoint,Los Angeles,5.1.0,50,true,3527,56
+GeoCode,Los Angeles,5.1.0,50,true,4072,56
+RefPoint,Los Angeles,4.1.0,10,true,2890,47
+GeoCode,Los Angeles,4.1.0,10,true,3689,47
+RefPoint,Los Angeles,4.1.0,20,true,3228,51
+GeoCode,Los Angeles,4.1.0,20,true,2954,51
+RefPoint,Los Angeles,4.1.0,50,true,3621,56
+GeoCode,Los Angeles,4.1.0,50,true,3814,56
+RefPoint,Los Angeles,3.0.0,10,true,3423,47
+GeoCode,Los Angeles,3.0.0,10,true,3073,47
+RefPoint,Los Angeles,3.0.0,20,true,2879,51
+GeoCode,Los Angeles,3.0.0,20,true,3182,51
+RefPoint,Los Angeles,3.0.0,50,true,3934,56
+GeoCode,Los Angeles,3.0.0,50,true,3889,56
+RefPoint,Chicago,5.1.0,10,true,3517,41
+GeoCode,Chicago,5.1.0,10,true,3799,40
+RefPoint,Chicago,5.1.0,20,true,3021,46
+GeoCode,Chicago,5.1.0,20,true,3394,44
+RefPoint,Chicago,5.1.0,50,true,3304,46
+GeoCode,Chicago,5.1.0,50,true,3413,44
+RefPoint,Chicago,4.1.0,10,true,3301,41
+GeoCode,Chicago,4.1.0,10,true,3055,40
+RefPoint,Chicago,4.1.0,20,true,3418,46
+GeoCode,Chicago,4.1.0,20,true,3193,44
+RefPoint,Chicago,4.1.0,50,true,3370,46
+GeoCode,Chicago,4.1.0,50,true,3951,44
+RefPoint,Chicago,3.0.0,10,true,3030,41
+GeoCode,Chicago,3.0.0,10,true,2828,40
+RefPoint,Chicago,3.0.0,20,true,3705,46
+GeoCode,Chicago,3.0.0,20,true,2952,44
+RefPoint,Chicago,3.0.0,50,true,3538,46
+GeoCode,Chicago,3.0.0,50,true,3120,44

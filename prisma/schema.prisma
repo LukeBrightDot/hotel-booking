@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model SearchLog {
+  id            String        @id @default(cuid())
+  sessionId     String
+  searchParams  Json
+  destination   String
+  checkIn       DateTime
+  checkOut      DateTime
+  rooms         Int
+  adults        Int
+  children      Int
+  resultsCount  Int?
+  responseTime  Int?
+  status        String        @default("pending")
+  errorMessage  String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  results       HotelResult[]
+
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+model HotelResult {
+  id              String     @id @default(cuid())
+  searchLogId     String
+  searchLog       SearchLog  @relation(fields: [searchLogId], references: [id], onDelete: Cascade)
+
+  hotelCode       String
+  hotelName       String
+  chainCode       String?
+  chainName       String?
+  starRating      Float?
+  address         Json
+  city            String
+  country         String
+  coordinates     Json?
+  lowestRate      Float?
+  highestRate     Float?
+  currencyCode    String?
+  rateCount       Int?
+  amenities       Json?
+  images          Json?
+  thumbnail       String?
+
+  createdAt       DateTime   @default(now())
+
+  @@index([hotelCode])
+  @@index([searchLogId])
+  @@index([lowestRate])
+}
+
+model Booking {
+  id                  String   @id @default(cuid())
+  confirmationNumber  String?  @unique
+  sabreLocator        String?
+  propertyConfirmation String?
+
+  hotelCode           String
+  hotelName           String
+  roomTypeCode        String
+  roomTypeName        String?
+  rateCode            String
+  checkIn             DateTime
+  checkOut            DateTime
+  nights              Int
+
+  guestFirstName      String
+  guestLastName       String
+  guestEmail          String
+  guestPhone          String?
+
+  totalAmount         Float
+  currencyCode        String
+  priceBreakdown      Json?
+
+  status              String   @default("pending")
+  sabreRequest        Json?
+  sabreResponse       Json?
+  errorMessage        String?
+
+  specialRequests     String?
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([guestEmail])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ApiLog {
+  id            String   @id @default(cuid())
+  endpoint      String
+  method        String
+  requestBody   Json?
+  responseBody  Json?
+  statusCode    Int?
+  responseTime  Int?
+  error         String?
+  createdAt     DateTime @default(now())
+
+  @@index([endpoint])
+  @@index([createdAt])
+}
