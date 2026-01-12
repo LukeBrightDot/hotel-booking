@@ -132,41 +132,102 @@ To pass data from Chrome to iTerm Claude:
 
 ---
 
-## The & Command (State Transfer)
+## The & Command (Dispatch to Web Sessions)
 
-### How It's Supposed to Work
+### How It Works
 
-From the whiteboard: "Seamless State Transfer - Pass context & files between local & web"
+The `&` prefix is a **Claude Code CLI feature** that dispatches tasks to web sessions running Opus 4.5.
 
-**Current Reality:** The `&` command in Claude Code CLI is used to reference previous context or web sessions. However, direct integration between iTerm Claude and Web Claude requires manual copy-paste of relevant context.
+```
+┌─────────────────┐    & prefix     ┌──────────────────┐
+│  iTERM (Local)  │ ─────────────▶ │  WEB (Cloud)     │
+│  Sonnet 4.5     │                │  Opus 4.5        │
+│  Your main hub  │                │  Complex tasks   │
+└────────┬────────┘                └────────┬─────────┘
+         │                                  │
+         │◀────── /teleport ───────────────┘
+         │        (pull results back)
+```
 
-### Practical Workflow
+### Dispatch a Task
 
-**Step 1: Spy in Chrome**
+In iTerm Claude Code, prefix your message with `&`:
+
+```bash
+& Analyze this booking payload from bellhopping.com and create implementation plan:
+{
+  "HotelCode": "ABC123",
+  "RoomType": "DBL",
+  ...captured JSON...
+}
+```
+
+This creates a **new web session on claude.ai** with your current context. The web session runs in the background while you continue working locally.
+
+### Check Progress
+
+```bash
+/tasks   # View all background web sessions and their status
+```
+
+### Teleport Results Back
+
+When the web session completes (or anytime you want to check):
+
+```bash
+/teleport        # Interactive picker - shows all web sessions
+/tp              # Shorthand for /teleport
+```
+
+Or from command line:
+```bash
+claude --teleport              # Interactive picker
+claude --teleport <session-id> # Resume specific session directly
+```
+
+### Important Notes
+
+1. **One-way transfer:** You can dispatch with `&` but cannot push a local session to web. Results come back via `/teleport`.
+
+2. **Multiple concurrent sessions:** Each `&` creates a new web session. You can have multiple running simultaneously.
+
+3. **Context preserved:** The web session inherits your current conversation context when dispatched.
+
+### Practical Workflow for This Project
+
+**Step 1: Spy in Chrome DevTools**
 ```
 1. Open bellhopping.com
 2. Perform booking action
-3. Copy network request from DevTools
+3. Copy network request from DevTools (right-click → Copy → Copy as fetch)
 ```
 
-**Step 2: Plan in Web Claude (this session)**
-```
-Paste the payload here and say:
-"Analyze this booking payload from bellhopping.com and create implementation plan"
+**Step 2: Dispatch to Web Session (iTerm)**
+```bash
+& Analyze this booking payload I captured from bellhopping.com.
+Map fields to Sabre API and create implementation plan:
+
+[paste captured payload]
 ```
 
-**Step 3: Execute in iTerm Claude**
-```
-Copy the plan to iTerm and say:
-"Implement this plan for the booking flow"
+**Step 3: Continue Working Locally**
+```bash
+# While web session analyzes, you can:
+- Work on other features
+- Run tests
+- Check other parts of codebase
 ```
 
-### Future Enhancement
+**Step 4: Teleport Results Back**
+```bash
+/teleport   # When notified or ready, pull the plan back
+```
 
-For true seamless transfer, you could:
-- Use a shared file (e.g., `.claude/context.json`)
-- Write payloads/plans there
-- Reference from any session
+**Step 5: Execute the Plan**
+```bash
+# Now in iTerm with the plan from Opus, implement it
+Implement the booking API based on the plan above
+```
 
 ---
 

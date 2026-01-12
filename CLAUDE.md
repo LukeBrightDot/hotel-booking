@@ -64,12 +64,29 @@ Use & command in iTerm to pass context to Web session:
 - Verify with Chrome extension
 ```
 
-### The & Command
-In iTerm Claude, use `&` to reference web session context:
+### The & Command (Dispatch to Web)
+The `&` prefix dispatches tasks to a web session (Opus 4.5) while you continue working locally.
+
+**Dispatch:**
 ```bash
-# Tell iTerm Claude to use web session findings
-"& the booking payload structure we discussed"
+# In iTerm, prefix your message with &
+& Analyze this booking payload from bellhopping.com and create implementation plan:
+{...captured JSON...}
 ```
+
+**Check Progress:**
+```bash
+/tasks   # View status of background web sessions
+```
+
+**Teleport Results Back:**
+```bash
+/teleport   # Interactive picker to bring web session back
+/tp         # Shorthand
+claude --teleport <session-id>   # Resume specific session
+```
+
+**Note:** Session transfer is one-way (web → local). You dispatch with `&`, then `/teleport` back.
 
 ---
 
