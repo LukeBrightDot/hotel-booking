@@ -13,11 +13,13 @@
 |----------|----------|--------|---------------|
 | 1 | `AUTHENTICATION_FIXED.md` | **THE TRUTH** | V2 EPR Auth (`V1:USER:PCC:DOMAIN`). V3 is NOT provisioned. |
 | 2 | `SEARCH_IMPLEMENTATION_STATUS.md` | **THE TRUTH** | Search uses **V5 API** (`/v5/get/hotelavail`) |
-| 3 | `SABRE_BOOKING_API_MAPPING.md` | **THE TRUTH** | Booking uses **V2 API** (`/v2.0.0/book/hotels`). Field mappings complete. |
-| 4 | `BELLHOPPING_BOOKING_PAYLOAD_CAPTURED.md` | **CAPTURED** | Actual form data from bellhopping.com (2026-01-13) |
-| 5 | `SABRE_AUTH_V3_TEST_RESULTS.md` | **Confirmed** | Documents why V3 fails (not provisioned, not broken) |
-| 6 | `bellhopping.com` (Live Site) | **SPY TARGET** | Reference for UI/UX implementation |
-| 7 | `SABRE_API_REFERENCE.md` | **DEPRECATED** | Field definitions only - NOT for endpoints/auth |
+| 3 | `BOOKING_IMPLEMENTATION_PLAN.md` | **⚠️ DISCOVERY PLAN** | Complete implementation guide with discovery tests for unknown endpoint |
+| 4 | `BOOKING_QUICK_START.md` | **START HERE** | Quick reference for terminal agent (Phase 0-3) |
+| 5 | `SABRE_BOOKING_API_MAPPING.md` | **REFERENCE** | Field mappings (endpoint TBD - see plan) |
+| 6 | `BELLHOPPING_BOOKING_PAYLOAD_CAPTURED.md` | **CAPTURED** | Actual form data from bellhopping.com (2026-01-13) |
+| 7 | `SABRE_AUTH_V3_TEST_RESULTS.md` | **Confirmed** | Documents why V3 fails (not provisioned, not broken) |
+| 8 | `bellhopping.com` (Live Site) | **SPY TARGET** | Reference for UI/UX implementation |
+| 9 | `SABRE_API_REFERENCE.md` | **DEPRECATED** | Field definitions only - NOT for endpoints/auth |
 
 ---
 
@@ -105,9 +107,10 @@ claude --teleport <session-id>   # Resume specific session
 - RefPointType: `"6"` for codes, `"3"` for coordinates
 - Date format: `YYYY-MM-DDT00:00:00`
 
-### Booking (Captured 2026-01-13)
+### Booking (Implementation Plan Ready - 2026-01-13)
 - ✅ **Booking flow captured** from bellhopping.com
-- Endpoint: `POST https://api.sabre.com/v2.0.0/book/hotels`
+- ⚠️ **Endpoint UNKNOWN** - `POST /v2.0.0/book/hotels` NOT in official Sabre docs
+- 🔍 **MUST RUN DISCOVERY TEST FIRST** - See `BOOKING_QUICK_START.md`
 - Format: JSON (not form-encoded)
 - Auth: V2 EPR token (already working)
 - **Critical Fields:**
@@ -118,6 +121,7 @@ claude --teleport <session-id>   # Resume specific session
   - Expiration format: `YYYY-MM`
 - **Agency fields NOT required** (handled by PCC in token)
 - Missing from bellhopping form: address, phone (must add)
+- **PCI Compliance:** NEVER store full card or CVV
 
 ### Chrome Integration
 - Browser MUST be open and connected to CLI
@@ -137,14 +141,17 @@ claude --teleport <session-id>   # Resume specific session
 ### Current Focus: Booking Flow Implementation
 - [x] Spy on bellhopping.com booking process
 - [x] Capture complete form structure (24+ fields)
-- [x] Map to Sabre API (`/v2.0.0/book/hotels`)
+- [x] Map fields to Sabre API structure
 - [x] Identify missing fields (address, phone)
+- [x] Create complete implementation plan with discovery tests
 - [x] Create TypeScript interfaces
-- [ ] Update booking form UI (add address, phone)
-- [ ] Implement booking service (src/lib/sabre/booking.ts)
-- [ ] Build booking API endpoint (src/app/api/booking/create/route.ts)
-- [ ] Create confirmation page
-- [ ] End-to-end testing
+- [ ] **🔍 PHASE 0: Run endpoint discovery test** ⬅️ START HERE
+- [ ] **PHASE 0: Document discovery results**
+- [ ] PHASE 1: Implement booking service (src/lib/sabre/booking.ts)
+- [ ] PHASE 1: Build booking API endpoint (src/app/api/booking/create/route.ts)
+- [ ] PHASE 2: Update booking form UI (add address, phone)
+- [ ] PHASE 2: Create confirmation page
+- [ ] PHASE 3: End-to-end testing
 
 ---
 
