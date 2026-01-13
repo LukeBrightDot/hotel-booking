@@ -14,7 +14,7 @@
 | 1 | `AUTHENTICATION_FIXED.md` | **THE TRUTH** | V2 EPR Auth (`V1:USER:PCC:DOMAIN`). V3 is NOT provisioned. |
 | 2 | `SEARCH_IMPLEMENTATION_STATUS.md` | **THE TRUTH** | Search uses **V5 API** (`/v5/get/hotelavail`) |
 | 3 | `SABRE_AUTH_V3_TEST_RESULTS.md` | **Confirmed** | Documents why V3 fails (not provisioned, not broken) |
-| 4 | `bellhopping.com` (Live Site) | **SPY TARGET** | Reference for Booking Payload structure |
+| 4 | `hotels.bellhopping.com` (Iframe) | **SPY TARGET** | Reference for Booking Payload structure |
 | 5 | `SABRE_API_REFERENCE.md` | **DEPRECATED** | Field definitions only - NOT for endpoints/auth |
 
 ---
@@ -112,6 +112,26 @@ claude --teleport <session-id>   # Resume specific session
 - Browser MUST be open and connected to CLI
 - Use DevTools Network tab to capture real requests
 - Test UI changes in localhost:3000
+
+### URL Distinction (IMPORTANT)
+- **`https://hotels.bellhopping.com/`** - Direct iframe URL (USE THIS FOR TESTING)
+- **`https://bellhopping.com/`** - Main site requiring login (DO NOT USE for spying)
+- The iframe URL takes you directly to the booking interface without authentication
+
+### Test Data for Sabre Sandbox
+```
+Guest Name: TEST USER (or any name)
+Phone: 555-555-5555
+Email: test@example.com
+
+Credit Cards (Standard Test Numbers):
+- Visa: 4111 1111 1111 1111
+- MasterCard: 5431 1111 1111 1111
+- Amex: 3711 1111 1111 114
+
+Expiry: Any future date (e.g., 12/2026)
+CVV: Any 3 digits (4 for Amex)
+```
 
 ---
 
