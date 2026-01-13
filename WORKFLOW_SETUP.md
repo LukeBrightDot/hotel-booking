@@ -59,24 +59,116 @@ echo ".claude/settings.local.json" >> .gitignore
 
 ---
 
-## MCP Integration (Optional but Powerful)
+## Custom Subagents (Automated Specialists)
 
-The whiteboard mentions `.mcp.json` for external tool integration.
+Subagents are markdown files in `.claude/agents/` that Claude automatically spawns for specific tasks.
 
-Create `.mcp.json` (if you want Slack/Sentry integration later):
+### Installed Subagents
+
+| Agent | Model | Purpose | Trigger |
+|-------|-------|---------|---------|
+| `bellhopping-spy` | Haiku | Analyze captured payloads | "Analyze this payload from bellhopping..." |
+| `ui-tester` | Haiku | Visual comparison testing | "Compare UI with bellhopping..." |
+| `booking-qa` | Sonnet | End-to-end QA testing | "Run QA on booking flow..." |
+
+### How They Work
+
+Claude automatically detects when a subagent is relevant and spawns it:
+
+```bash
+# In iTerm - Claude will auto-spawn bellhopping-spy
+"I captured this payload from bellhopping.com, analyze it:
+{...JSON...}"
+
+# Claude will auto-spawn ui-tester
+"Compare the hotel card component with bellhopping.com"
+
+# Claude will auto-spawn booking-qa
+"Run QA tests on the booking flow"
+```
+
+### Creating Custom Subagents
+
+Create `.claude/agents/your-agent.md`:
+
+```markdown
+---
+name: your-agent-name
+description: What it does. When to use it.
+model: haiku   # haiku, sonnet, opus, or inherit
+tools: Read, Grep, Glob, Bash   # Restrict available tools
+color: green   # UI color
+---
+
+Your system prompt here. Instructions for the agent.
+```
+
+### Managing Subagents
+
+```bash
+/agents        # List all available subagents
+/agents edit   # Edit existing subagent
+```
+
+---
+
+## MCP Browser Automation (Puppeteer)
+
+MCP gives Claude **direct browser control** - not just reading pages, but taking screenshots, clicking, typing.
+
+### Setup (Already Configured)
+
+The `.mcp.json` in project root enables Puppeteer:
+
 ```json
 {
-  "version": "1.0",
-  "servers": {
-    "browser": {
+  "mcpServers": {
+    "puppeteer": {
       "command": "npx",
-      "args": ["@anthropic/mcp-server-puppeteer"]
+      "args": ["-y", "puppeteer-mcp-claude"]
     }
   }
 }
 ```
 
-For now, you can skip this - Chrome extension handles browser interaction.
+### First-Time Installation
+
+```bash
+# Install the MCP server
+npx puppeteer-mcp-claude install
+
+# Restart Claude Code to load MCP
+# Then verify with:
+/mcp
+```
+
+### Available Browser Tools
+
+| Tool | Usage Example |
+|------|---------------|
+| `puppeteer_launch` | "Launch a browser" |
+| `puppeteer_navigate` | "Go to bellhopping.com" |
+| `puppeteer_screenshot` | "Take a screenshot of the page" |
+| `puppeteer_click` | "Click the search button" |
+| `puppeteer_type` | "Type 'Miami' in the location field" |
+| `puppeteer_get_text` | "Get the hotel name text" |
+
+### Example: Automated UI Comparison
+
+```bash
+# In iTerm Claude
+"Launch a browser, take screenshots of:
+1. bellhopping.com search form
+2. localhost:3000 search form
+Then compare them and list differences"
+```
+
+### Example: Spy on Network (Manual + Auto)
+
+Since Puppeteer can't capture network requests directly, use hybrid approach:
+
+1. **Manual:** Open DevTools, capture the request, paste to Claude
+2. **Auto:** Use Puppeteer to navigate and trigger actions, observe in DevTools
 
 ---
 
@@ -313,11 +405,14 @@ Only pre-approve commands that can't cause harm:
 
 ## Quick Start Checklist
 
-- [ ] Create `.claude/` directory
-- [ ] Add `.claude/settings.json` with pre-approved commands
+- [x] Create `.claude/` directory
+- [x] Create `.claude/agents/` with subagents (bellhopping-spy, ui-tester, booking-qa)
+- [x] Add `.mcp.json` with Puppeteer configuration
+- [ ] Run `npx puppeteer-mcp-claude install` in terminal
+- [ ] Restart Claude Code to load MCP and subagents
+- [ ] Verify with `/mcp` and `/agents`
 - [ ] Keep Chrome tabs organized (localhost:3000, bellhopping.com)
 - [ ] Enable DevTools Network logging
-- [ ] Use Plan Mode for complex tasks (Shift+Tab x2)
 - [ ] Test workflow: Spy -> Plan -> Execute
 
 ---
