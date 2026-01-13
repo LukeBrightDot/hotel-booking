@@ -64,53 +64,103 @@ All three Sabre authentication methods (v3, v2, v1) are returning:
 3. **Missing Configuration** - May need additional setup (PCC, EPR, etc.)
 4. **Different Auth Method** - Sabre may have changed authentication requirements
 
-## 📋 Next Steps
+## ✅ Phase 2: Authentication & Search Complete
 
-### Immediate (Required Before Proceeding)
+### Authentication Fixed
+- **V2 EPR Authentication Working** (~200ms response time)
+- Format: `V1:USER:PCC:DOMAIN` (`V1:250463:52JL:AA`)
+- Base URL: `https://api.sabre.com`
+- Token expires: 7 days (604800 seconds)
+- Documented in: `AUTHENTICATION_FIXED.md`
 
-1. **Verify Sabre Credentials**
-   - Contact Sabre support or account administrator
-   - Confirm credentials are active
-   - Get current authentication documentation
-   - Verify account has API access enabled
+### Search Implementation Complete
+- **V5 API Working:** `POST /v5/get/hotelavail`
+- Location autocomplete implemented
+- Search results UI complete
+- Documented in: `SEARCH_IMPLEMENTATION_STATUS.md`
 
-2. **Test with Sabre Postman Collection**
-   - Download official Sabre Postman collection
-   - Test authentication with their examples
-   - Compare working request with our implementation
+## 🎯 Phase 3: Booking Flow - IN PROGRESS
 
-3. **Alternative: Use Mock Data**
-   - Create mock responses for development
-   - Build search/booking UI without live API
-   - Integrate real API once credentials work
+### Completed (2026-01-13)
+- ✅ **Booking Flow Captured** from bellhopping.com
+- ✅ **Form Structure Analyzed** - All 24+ fields documented
+- ✅ **Sabre Booking API Mapped** - Field-by-field mapping complete
+- ✅ **Implementation Plan Created** - 40+ tasks identified
 
-### Once Authentication Works
+### Key Documents Created
+1. **`BELLHOPPING_BOOKING_PAYLOAD_CAPTURED.md`** - Complete form capture
+   - Endpoint: `POST /HotelBook/HotelBooking`
+   - All field names, types, and requirements
+   - BookingKeyRooms format analysis
 
-4. **Set Up PostgreSQL Database**
-   ```bash
-   # Option 1: Local PostgreSQL
-   brew install postgresql
-   # Start service and update DATABASE_URL in .env.local
+2. **`SABRE_BOOKING_API_MAPPING.md`** - Comprehensive mapping (914 lines)
+   - Sabre endpoint: `POST /v2.0.0/book/hotels`
+   - Field mappings: bellhopping → Sabre
+   - TypeScript interfaces (3 types)
+   - Implementation checklist
+   - PCI compliance requirements
+   - Testing strategy
 
-   # Option 2: Docker
-   docker run --name hotel-booking-db -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres
+### Critical Findings
 
-   # Then run migrations:
-   npx prisma migrate dev
-   ```
+**Sabre Booking Endpoint:**
+- URL: `https://api.sabre.com/v2.0.0/book/hotels`
+- Method: POST (JSON format)
+- Auth: V2 EPR token (already working)
 
-5. **Build Hotel Search**
-   - Create search form component
-   - Implement `/api/search` endpoint using `POST /v1.0.0/shop/hotels/geosearch`
-   - Add progressive loading (searches take 6-30 seconds)
-   - Store results in database
+**Missing Fields to Add:**
+- ✅ Guest Address (line1, city, postal, country) - REQUIRED
+- ✅ Phone Number - STRONGLY RECOMMENDED
+- ✅ Billing Address - REQUIRED for payment
 
-6. **Build Hotel Details & Booking**
-   - Hotel detail page
-   - Room selection
+**Agency Fields:**
+- NOT required in Sabre requests (handled by V2 EPR token)
+- PCC 52JL already provides agency context
+
+**Payment Card Mapping:**
+- VISA → `VI`, MASTERCARD → `MC`, AMEX → `AX`
+- Expiration format: `YYYY-MM` (combine month + year)
+
+### Next Steps
+
+1. **Update Booking Form** (Add missing fields)
+   - src/components/BookingForm.tsx
+   - Guest address fields
+   - Phone number field
+   - Billing address (optional, default to guest)
+
+2. **Create Booking Service**
+   - src/lib/sabre/booking.ts
+   - Implement field mapping
+   - Handle payment card formatting
+   - PCI compliance safeguards
+
+3. **Build Booking API Endpoint**
+   - src/app/api/booking/create/route.ts
+   - Request validation
+   - Sabre API call
+   - Database storage (Booking model)
+   - Error handling
+
+4. **Implement UI Flow**
+   - Room selection (store RoomTypeCode, RateCode)
    - Guest information form
-   - Payment integration
-   - Booking confirmation
+   - Payment form with validation
+   - Confirmation page
+
+5. **Testing**
+   - Use Sabre test credit cards
+   - Test in cert environment
+   - Validate PCI compliance
+   - End-to-end booking flow
+
+## 📋 Immediate Next Actions
+
+### For Implementation Planning Session
+Review these documents:
+- `SABRE_BOOKING_API_MAPPING.md` - Full technical mapping
+- `BELLHOPPING_BOOKING_PAYLOAD_CAPTURED.md` - Captured data
+- Use findings to create detailed implementation plan
 
 ## 🏗️ Project Structure
 

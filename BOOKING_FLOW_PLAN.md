@@ -24,7 +24,7 @@ This document outlines the practical workflow for implementing the hotel booking
 
 ### Step 1.1: SPY (Chrome)
 
-**Action in bellhopping.com:**
+**Action in hotels.bellhopping.com:**
 1. Search for a hotel (you already have search working)
 2. Click on a hotel to see room options
 3. Open DevTools > Network tab
@@ -69,7 +69,7 @@ Create:
 
 1. Navigate to localhost:3000/hotels/[code]
 2. Check if rooms display correctly
-3. Compare layout with bellhopping.com
+3. Compare layout with hotels.bellhopping.com
 4. Test room selection interaction
 
 ---
@@ -78,7 +78,7 @@ Create:
 
 ### Step 2.1: SPY (Chrome)
 
-**Action in bellhopping.com:**
+**Action in hotels.bellhopping.com:**
 1. Select a room
 2. Proceed to guest information form
 3. Fill out the form
@@ -118,7 +118,7 @@ Paste form structure. I will:
 
 ### Step 3.1: SPY (Chrome) - CRITICAL
 
-**Action in bellhopping.com:**
+**Action in hotels.bellhopping.com:**
 1. Fill guest form and proceed
 2. Enter payment details
 3. **CAPTURE THE BOOKING REQUEST** - This is the key payload
@@ -154,7 +154,7 @@ This is the most complex phase. I will:
 - Complete full booking flow
 - Check confirmation displays
 - Verify Booking saved to database
-- Compare confirmation with bellhopping.com
+- Compare confirmation with hotels.bellhopping.com
 
 ---
 
@@ -169,7 +169,7 @@ Based on common Sabre patterns:
 | Book | `CreatePassengerNameRecordRQ` | Create reservation |
 | Confirm | `GetReservationRQ` | Fetch booking details |
 
-**DO NOT ASSUME** - Verify against bellhopping.com network traffic.
+**DO NOT ASSUME** - Verify against hotels.bellhopping.com network traffic.
 
 ---
 
@@ -204,7 +204,7 @@ Read BOOKING_FLOW_PLAN.md for context."
 ### Pass Captured Payload (iTerm → Web)
 ```bash
 # After capturing in Chrome, paste to Web Claude
-"Analyze this room selection payload I captured from bellhopping.com:
+"Analyze this room selection payload I captured from hotels.bellhopping.com:
 [paste payload]"
 ```
 
@@ -251,8 +251,8 @@ Update this as you progress:
 
 When you're ready to begin Phase 1:
 
-1. **In Chrome:** Go to bellhopping.com, search for a hotel, click to see rooms
+1. **In Chrome:** Go to hotels.bellhopping.com, search for a hotel, click to see rooms
 2. **Capture:** Copy the network request that loads rooms
 3. **Paste here:** Share the payload and I'll create the implementation plan
 
-The workflow begins with YOU providing the spy data. I cannot guess what bellhopping.com sends.
+The workflow begins with YOU providing the spy data. I cannot guess what hotels.bellhopping.com sends.

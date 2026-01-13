@@ -13,9 +13,11 @@
 |----------|----------|--------|---------------|
 | 1 | `AUTHENTICATION_FIXED.md` | **THE TRUTH** | V2 EPR Auth (`V1:USER:PCC:DOMAIN`). V3 is NOT provisioned. |
 | 2 | `SEARCH_IMPLEMENTATION_STATUS.md` | **THE TRUTH** | Search uses **V5 API** (`/v5/get/hotelavail`) |
-| 3 | `SABRE_AUTH_V3_TEST_RESULTS.md` | **Confirmed** | Documents why V3 fails (not provisioned, not broken) |
-| 4 | `bellhopping.com` (Live Site) | **SPY TARGET** | Reference for Booking Payload structure |
-| 5 | `SABRE_API_REFERENCE.md` | **DEPRECATED** | Field definitions only - NOT for endpoints/auth |
+| 3 | `SABRE_BOOKING_API_MAPPING.md` | **THE TRUTH** | Booking uses **V2 API** (`/v2.0.0/book/hotels`). Field mappings complete. |
+| 4 | `BELLHOPPING_BOOKING_PAYLOAD_CAPTURED.md` | **CAPTURED** | Actual form data from bellhopping.com (2026-01-13) |
+| 5 | `SABRE_AUTH_V3_TEST_RESULTS.md` | **Confirmed** | Documents why V3 fails (not provisioned, not broken) |
+| 6 | `bellhopping.com` (Live Site) | **SPY TARGET** | Reference for UI/UX implementation |
+| 7 | `SABRE_API_REFERENCE.md` | **DEPRECATED** | Field definitions only - NOT for endpoints/auth |
 
 ---
 
@@ -103,10 +105,19 @@ claude --teleport <session-id>   # Resume specific session
 - RefPointType: `"6"` for codes, `"3"` for coordinates
 - Date format: `YYYY-MM-DDT00:00:00`
 
-### Booking (Next Phase)
-- DO NOT implement without spying bellhopping.com first
-- Capture: Room selection, Guest form, Payment payloads
-- Expected endpoint: CreatePassengerNameRecordRQ or similar
+### Booking (Captured 2026-01-13)
+- ✅ **Booking flow captured** from bellhopping.com
+- Endpoint: `POST https://api.sabre.com/v2.0.0/book/hotels`
+- Format: JSON (not form-encoded)
+- Auth: V2 EPR token (already working)
+- **Critical Fields:**
+  - `RoomTypeCode`, `RateCode` from search results
+  - Guest address REQUIRED (line1, city, postal, country)
+  - Phone number STRONGLY RECOMMENDED
+  - Card type mapping: VISA→VI, MC→MC, AMEX→AX
+  - Expiration format: `YYYY-MM`
+- **Agency fields NOT required** (handled by PCC in token)
+- Missing from bellhopping form: address, phone (must add)
 
 ### Chrome Integration
 - Browser MUST be open and connected to CLI
@@ -123,13 +134,17 @@ claude --teleport <session-id>   # Resume specific session
 - [x] Location Autocomplete
 - [x] Search Results UI
 
-### Current Focus: Booking Flow
-- [ ] Spy on bellhopping.com booking process
-- [ ] Map room selection payload
-- [ ] Map guest information payload
-- [ ] Map payment/booking confirmation payload
-- [ ] Implement booking API endpoint
-- [ ] Build booking UI forms
+### Current Focus: Booking Flow Implementation
+- [x] Spy on bellhopping.com booking process
+- [x] Capture complete form structure (24+ fields)
+- [x] Map to Sabre API (`/v2.0.0/book/hotels`)
+- [x] Identify missing fields (address, phone)
+- [x] Create TypeScript interfaces
+- [ ] Update booking form UI (add address, phone)
+- [ ] Implement booking service (src/lib/sabre/booking.ts)
+- [ ] Build booking API endpoint (src/app/api/booking/create/route.ts)
+- [ ] Create confirmation page
+- [ ] End-to-end testing
 
 ---
 
