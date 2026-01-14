@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { searchHotels } from '@/lib/sabre/search';
+import { searchHotels, HotelSearchResult } from '@/lib/sabre/search';
 import { Location } from '@/types/location';
 import { cache, generateSearchCacheKey, CACHE_TTL } from '@/lib/cache';
 
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     // Check cache first
     const cacheKey = generateSearchCacheKey(searchParams);
-    const cachedResults = cache.get(cacheKey);
+    const cachedResults = cache.get<HotelSearchResult[]>(cacheKey);
 
     if (cachedResults) {
       console.log('✅ Returning cached search results for:', cacheKey);

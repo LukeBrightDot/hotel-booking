@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Bell, Search } from 'lucide-react';
+import { Bell, Search, Sparkles } from 'lucide-react';
 
 export function Header() {
   return (
@@ -31,6 +31,13 @@ export function Header() {
             className="text-sm font-medium text-gray-700 hover:text-[#2C5F63] transition-colors uppercase tracking-wide"
           >
             DASHBOARD
+          </Link>
+          <Link
+            href="/assistant"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2C5F63] hover:text-[#D9A021] transition-colors uppercase tracking-wide"
+          >
+            <Sparkles className="w-4 h-4" />
+            AI ASSISTANT
           </Link>
         </nav>
 
