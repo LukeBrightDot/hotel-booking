@@ -13,11 +13,13 @@
 |----------|----------|--------|---------------|
 | 1 | `AUTHENTICATION_FIXED.md` | **THE TRUTH** | V2 EPR Auth (`V1:USER:PCC:DOMAIN`). V3 is NOT provisioned. |
 | 2 | `SEARCH_IMPLEMENTATION_STATUS.md` | **THE TRUTH** | Search uses **V5 API** (`/v5/get/hotelavail`) |
-| 3 | `SABRE_BOOKING_API_MAPPING.md` | **THE TRUTH** | Booking uses **V2 API** (`/v2.0.0/book/hotels`). Field mappings complete. |
-| 4 | `BELLHOPPING_BOOKING_PAYLOAD_CAPTURED.md` | **CAPTURED** | Actual form data from bellhopping.com (2026-01-13) |
-| 5 | `SABRE_AUTH_V3_TEST_RESULTS.md` | **Confirmed** | Documents why V3 fails (not provisioned, not broken) |
-| 6 | `bellhopping.com` (Live Site) | **SPY TARGET** | Reference for UI/UX implementation |
-| 7 | `SABRE_API_REFERENCE.md` | **DEPRECATED** | Field definitions only - NOT for endpoints/auth |
+| 3 | `BOOKING_PAYLOAD_DISCOVERY_PLAN.md` | **THE TRUTH** | Booking endpoint discovery (2026-01-15). Correct: `/v2/book/hotels` with `CreateBookingRQ`. |
+| 4 | `SABRE_SUPPORT_REQUEST.md` | **ACTIVE** | Support request for booking API access (ERR.2SG.SEC.NOT_AUTHORIZED) |
+| 5 | `SABRE_BOOKING_API_MAPPING.md` | **REFERENCE** | Field mappings for booking payload (structure confirmed) |
+| 6 | `BELLHOPPING_BOOKING_PAYLOAD_CAPTURED.md` | **CAPTURED** | Actual form data from bellhopping.com (2026-01-13) |
+| 7 | `SABRE_AUTH_V3_TEST_RESULTS.md` | **Confirmed** | Documents why V3 fails (not provisioned, not broken) |
+| 8 | `bellhopping.com` (Live Site) | **SPY TARGET** | Reference for UI/UX implementation |
+| 9 | `SABRE_API_REFERENCE.md` | **DEPRECATED** | Field definitions only - NOT for endpoints/auth |
 
 ---
 
@@ -105,19 +107,22 @@ claude --teleport <session-id>   # Resume specific session
 - RefPointType: `"6"` for codes, `"3"` for coordinates
 - Date format: `YYYY-MM-DDT00:00:00`
 
-### Booking (Captured 2026-01-13)
-- ✅ **Booking flow captured** from bellhopping.com
-- Endpoint: `POST https://api.sabre.com/v2.0.0/book/hotels`
-- Format: JSON (not form-encoded)
-- Auth: V2 EPR token (already working)
-- **Critical Fields:**
+### Booking (Discovery Complete - 2026-01-15)
+- ✅ **Payload structure discovered** through systematic testing (15 variations)
+- ✅ **Correct endpoint:** `POST https://api.sabre.com/v2/book/hotels`
+- ✅ **Correct wrapper:** `CreateBookingRQ` with `HotelBookInfo` nested structure
+- ✅ **Authentication works:** V2 EPR token accepted
+- ❌ **BLOCKED:** ERR.2SG.SEC.NOT_AUTHORIZED - PCC 52JL lacks booking API permissions
+- **Status:** Both CERT and PRODUCTION return 403 Forbidden
+- **Blocker:** Awaiting Sabre support to enable booking API access
+- **Discovery method:** Tested all endpoint variations, confirmed `/v2/book/hotels` recognizes payload
+- **Critical Fields (for when access is granted):**
   - `RoomTypeCode`, `RateCode` from search results
   - Guest address REQUIRED (line1, city, postal, country)
   - Phone number STRONGLY RECOMMENDED
   - Card type mapping: VISA→VI, MC→MC, AMEX→AX
   - Expiration format: `YYYY-MM`
-- **Agency fields NOT required** (handled by PCC in token)
-- Missing from bellhopping form: address, phone (must add)
+- **Next step:** Contact Sabre support with SABRE_SUPPORT_REQUEST.md
 
 ### Chrome Integration
 - Browser MUST be open and connected to CLI
@@ -134,12 +139,16 @@ claude --teleport <session-id>   # Resume specific session
 - [x] Location Autocomplete
 - [x] Search Results UI
 
-### Current Focus: Booking Flow Implementation
+### Current Focus: Booking API Access (BLOCKED)
 - [x] Spy on bellhopping.com booking process
 - [x] Capture complete form structure (24+ fields)
-- [x] Map to Sabre API (`/v2.0.0/book/hotels`)
-- [x] Identify missing fields (address, phone)
-- [x] Create TypeScript interfaces
+- [x] Discover correct endpoint and payload structure (15 test variations)
+- [x] Confirm `/v2/book/hotels` with `CreateBookingRQ` wrapper
+- [x] Test both CERT and PRODUCTION environments
+- [x] Identify blocker: PCC 52JL lacks booking API permissions
+- [x] Create Sabre support request documentation
+- [ ] **BLOCKED:** Contact Sabre support for API access provisioning
+- [ ] Test booking with real access (once granted)
 - [ ] Update booking form UI (add address, phone)
 - [ ] Implement booking service (src/lib/sabre/booking.ts)
 - [ ] Build booking API endpoint (src/app/api/booking/create/route.ts)
