@@ -233,6 +233,7 @@ export function useRealtimeSession(options: UseRealtimeSessionOptions = {}) {
       // Set up audio element for playback
       const audioEl = document.createElement('audio');
       audioEl.autoplay = true;
+      document.body.appendChild(audioEl);
       audioElementRef.current = audioEl;
 
       pc.ontrack = (event) => {
@@ -321,11 +322,13 @@ export function useRealtimeSession(options: UseRealtimeSessionOptions = {}) {
     }
     if (audioElementRef.current) {
       audioElementRef.current.srcObject = null;
+      document.body.removeChild(audioElementRef.current);
     }
 
     peerConnectionRef.current = null;
     dataChannelRef.current = null;
     mediaStreamRef.current = null;
+    audioElementRef.current = null;
 
     setSessionState('disconnected');
     setAssistantState('idle');

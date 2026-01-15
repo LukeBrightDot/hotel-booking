@@ -8,7 +8,7 @@ interface PresenceOrbProps {
 }
 
 export function PresenceOrb({ state, className = '' }: PresenceOrbProps) {
-  // Number of bars for the waveform (iPhone-style)
+  // Number of bars for the waveform (iPhone-style) - NEW WAVEFORM CODE v2
   const barCount = 24;
   const bars = Array.from({ length: barCount }, (_, i) => i);
 
@@ -85,11 +85,13 @@ export function PresenceOrb({ state, className = '' }: PresenceOrbProps) {
       {bars.map((index) => (
         <motion.div
           key={index}
-          className="w-1.5 rounded-full"
+          className="rounded-full"
           style={{
+            width: '6px',
             backgroundColor: getBarColor(),
             transformOrigin: 'bottom',
           }}
+          initial={{ height: 10 }}
           animate={getBarHeight(index)}
           transition={{
             duration: getAnimationSpeed(),

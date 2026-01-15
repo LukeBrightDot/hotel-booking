@@ -257,7 +257,7 @@ export function AssistantCanvas() {
               key="connected"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
               className="flex flex-col items-center gap-12 w-full"
             >
               {/* Presence orb */}
