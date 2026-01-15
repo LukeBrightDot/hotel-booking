@@ -30,11 +30,21 @@ export const ResortCard: React.FC<ResortCardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`group bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-xl p-5
-                  hover:bg-white/80 hover:border-rose-200/50 hover:shadow-lg
-                  transition-all duration-500 cursor-pointer ${className}`}
+      className={`group backdrop-blur-sm rounded-xl p-5 transition-all duration-500 cursor-pointer animate-card-entrance ${className}`}
       style={{
         animationDelay: `${index * 150}ms`,
+        background: 'hsl(30 30% 99% / 0.8)',
+        border: '1px solid hsl(30 20% 90% / 0.5)',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'hsl(30 30% 99% / 0.95)';
+        e.currentTarget.style.borderColor = 'hsl(15 45% 75% / 0.5)';
+        e.currentTarget.style.boxShadow = '0 8px 32px hsl(15 30% 70% / 0.15)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'hsl(30 30% 99% / 0.8)';
+        e.currentTarget.style.borderColor = 'hsl(30 20% 90% / 0.5)';
+        e.currentTarget.style.boxShadow = 'none';
       }}
     >
       {/* Resort Image */}
@@ -52,19 +62,19 @@ export const ResortCard: React.FC<ResortCardProps> = ({
       {/* Resort Info */}
       <div className="space-y-2">
         {/* Location tag */}
-        <span className="text-xs tracking-[0.2em] uppercase font-light text-gray-500">
+        <span className="text-xs tracking-[0.2em] uppercase font-light" style={{ color: 'hsl(30 10% 50%)' }}>
           {resort.location}
         </span>
 
         {/* Name */}
-        <h3 className="text-lg font-light text-gray-900 group-hover:text-rose-700 transition-colors"
-            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+        <h3 className="text-lg font-light transition-colors"
+            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", color: 'hsl(30 15% 25%)' }}>
           {resort.name}
         </h3>
 
         {/* Description */}
         {resort.description && (
-          <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">
+          <p className="text-sm leading-relaxed line-clamp-2" style={{ color: 'hsl(30 10% 50%)' }}>
             {resort.description}
           </p>
         )}
@@ -74,7 +84,8 @@ export const ResortCard: React.FC<ResortCardProps> = ({
           {resort.amenities.slice(0, 3).map((amenity, i) => (
             <span
               key={i}
-              className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600"
+              className="text-xs px-2 py-0.5 rounded-full"
+              style={{ background: 'hsl(30 30% 94%)', color: 'hsl(30 15% 40%)' }}
             >
               {amenity}
             </span>
@@ -82,19 +93,19 @@ export const ResortCard: React.FC<ResortCardProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-end justify-between pt-3 border-t border-gray-100">
+        <div className="flex items-end justify-between pt-3" style={{ borderTop: '1px solid hsl(30 20% 90%)' }}>
           <div>
-            <span className="text-xs tracking-wider uppercase text-gray-400 block mb-0.5">From</span>
-            <span className="text-base text-gray-900" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+            <span className="text-xs tracking-wider uppercase block mb-0.5" style={{ color: 'hsl(30 10% 60%)' }}>From</span>
+            <span className="text-base" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", color: 'hsl(30 15% 25%)' }}>
               {resort.pricePerNight}
             </span>
-            <span className="text-xs text-gray-400"> / night</span>
+            <span className="text-xs" style={{ color: 'hsl(30 10% 60%)' }}> / night</span>
           </div>
 
           {/* Rating */}
           <div className="flex items-center gap-1">
-            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-            <span className="text-sm font-light text-gray-700">{resort.rating.toFixed(1)}</span>
+            <Star className="w-3.5 h-3.5" style={{ fill: 'hsl(40 45% 55%)', color: 'hsl(40 45% 55%)' }} />
+            <span className="text-sm font-light" style={{ color: 'hsl(30 15% 35%)' }}>{resort.rating.toFixed(1)}</span>
           </div>
         </div>
       </div>

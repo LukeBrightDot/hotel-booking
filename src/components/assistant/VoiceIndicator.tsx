@@ -27,33 +27,39 @@ export function VoiceIndicator({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5, duration: 0.5 }}
-      className="flex items-center gap-6 bg-white/80 backdrop-blur-xl px-8 py-4 rounded-full shadow-lg border border-slate-200/50"
+      className="flex items-center gap-3 px-4 py-3 rounded-full border shadow-sm"
+      style={{
+        background: 'hsl(30 20% 96% / 0.8)',
+        backdropFilter: 'blur(12px)',
+        borderColor: 'hsl(30 20% 88% / 0.5)',
+      }}
     >
       {/* Microphone toggle */}
       <button
         onClick={onToggleMic}
-        className={`
-          relative p-5 rounded-full transition-all duration-300 shadow-md
-          ${
-            isMuted
-              ? 'bg-slate-100 text-slate-400 hover:bg-slate-200 hover:shadow-lg'
-              : isListening
-              ? 'bg-gradient-to-br from-amber-400 to-amber-500 text-white shadow-amber-200'
-              : 'bg-gradient-to-br from-teal-500 to-teal-600 text-white hover:shadow-xl hover:scale-105'
-          }
-        `}
+        className="relative p-4 rounded-full transition-all duration-300"
+        style={{
+          background: isMuted
+            ? 'hsl(30 15% 90%)'
+            : isListening
+            ? 'hsl(15 45% 65%)'
+            : 'hsl(35 50% 75%)',
+          color: isMuted ? 'hsl(30 10% 50%)' : 'white',
+          boxShadow: isMuted ? 'none' : '0 4px 12px hsl(15 45% 65% / 0.3)',
+        }}
         aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
       >
         {isMuted ? (
-          <MicOff className="w-6 h-6" />
+          <MicOff className="w-5 h-5" />
         ) : (
-          <Mic className="w-6 h-6" />
+          <Mic className="w-5 h-5" />
         )}
 
         {/* Listening animation ring */}
         {isListening && !isMuted && (
           <motion.div
-            className="absolute inset-0 rounded-full border-2 border-amber-300"
+            className="absolute inset-0 rounded-full"
+            style={{ border: '2px solid hsl(15 45% 75%)' }}
             animate={{
               scale: [1, 1.4, 1],
               opacity: [0.8, 0, 0.8],
@@ -70,20 +76,18 @@ export function VoiceIndicator({
       {/* Speaker toggle */}
       <button
         onClick={onToggleSpeaker}
-        className={`
-          p-5 rounded-full transition-all duration-300 shadow-md
-          ${
-            isSpeakerOn
-              ? 'bg-gradient-to-br from-teal-500 to-teal-600 text-white hover:shadow-xl hover:scale-105'
-              : 'bg-slate-100 text-slate-400 hover:bg-slate-200 hover:shadow-lg'
-          }
-        `}
+        className="p-4 rounded-full transition-all duration-300"
+        style={{
+          background: isSpeakerOn ? 'hsl(35 50% 75%)' : 'hsl(30 15% 90%)',
+          color: isSpeakerOn ? 'white' : 'hsl(30 10% 50%)',
+          boxShadow: isSpeakerOn ? '0 4px 12px hsl(35 50% 75% / 0.3)' : 'none',
+        }}
         aria-label={isSpeakerOn ? 'Mute speaker' : 'Unmute speaker'}
       >
         {isSpeakerOn ? (
-          <Volume2 className="w-6 h-6" />
+          <Volume2 className="w-5 h-5" />
         ) : (
-          <VolumeX className="w-6 h-6" />
+          <VolumeX className="w-5 h-5" />
         )}
       </button>
 
@@ -92,9 +96,10 @@ export function VoiceIndicator({
         key={isListening ? 'listening' : 'ready'}
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.7 }}
-        className="text-sm text-slate-600 ml-2 font-medium tracking-wide"
+        className="text-xs tracking-[0.15em] uppercase font-light ml-1"
+        style={{ color: 'hsl(30 10% 50%)' }}
       >
-        {isMuted ? 'Microphone off' : isListening ? 'Listening...' : 'Ready'}
+        {isMuted ? 'Mic off' : isListening ? 'Listening...' : 'Ready'}
       </motion.span>
     </motion.div>
   );

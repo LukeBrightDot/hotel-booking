@@ -117,17 +117,17 @@ function ResultsContent() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ background: 'hsl(30 25% 98%)' }}>
       <main className="container mx-auto px-4 py-6">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Filters Sidebar */}
           <aside className="lg:w-48 flex-shrink-0">
-            <div className="border-b border-gray-200 pb-4 mb-4">
-              <h3 className="font-semibold text-gray-900 mb-4">Filters</h3>
+            <div className="pb-4 mb-4" style={{ borderBottom: '1px solid hsl(30 20% 85%)' }}>
+              <h3 className="text-xs font-light tracking-[0.15em] uppercase mb-4" style={{ color: 'hsl(30 15% 25%)' }}>Filters</h3>
 
               {/* Price Range */}
               <div className="mb-6">
-                <Label className="mb-2 block text-sm text-gray-700">Price Range</Label>
+                <Label className="mb-2 block text-xs font-light tracking-[0.1em] uppercase" style={{ color: 'hsl(30 10% 50%)' }}>Price Range</Label>
                 <Slider
                   value={[priceRange]}
                   onValueChange={(value) => setPriceRange(value[0])}
@@ -143,7 +143,7 @@ function ResultsContent() {
 
               {/* Star Rating */}
               <div className="mb-6">
-                <Label className="mb-2 block text-sm text-gray-700">Star Rating</Label>
+                <Label className="mb-2 block text-xs font-light tracking-[0.1em] uppercase" style={{ color: 'hsl(30 10% 50%)' }}>Star Rating</Label>
                 <div className="space-y-2">
                   {[5, 4, 3, 2, 1].map((rating) => (
                     <div key={rating} className="flex items-center gap-2">
@@ -162,7 +162,7 @@ function ResultsContent() {
 
               {/* Amenities */}
               <div>
-                <Label className="mb-2 block text-sm text-gray-700">Amenities</Label>
+                <Label className="mb-2 block text-xs font-light tracking-[0.1em] uppercase" style={{ color: 'hsl(30 10% 50%)' }}>Amenities</Label>
                 <div className="space-y-2">
                   {["WiFi", "Pool", "Spa", "Parking"].map((amenity) => (
                     <div key={amenity} className="flex items-center gap-2">
@@ -179,32 +179,33 @@ function ResultsContent() {
           <div className="flex-1">
             {loading ? (
               <div className="flex items-center justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-[#2C5F63]" />
+                <Loader2 className="h-8 w-8 animate-spin" style={{ color: 'hsl(15 45% 65%)' }} />
               </div>
             ) : error ? (
-              <div className="bg-red-50 border border-red-200 rounded p-6 text-center">
-                <p className="text-red-700 mb-4">{error}</p>
+              <div className="rounded-lg p-6 text-center" style={{ background: 'hsl(15 70% 95%)', border: '1px solid hsl(15 60% 85%)' }}>
+                <p className="mb-4" style={{ color: 'hsl(15 50% 40%)' }}>{error}</p>
                 <button
                   onClick={() => router.push('/')}
-                  className="px-6 py-2 bg-[#2C5F63] text-white rounded hover:bg-[#2C5F63]/90"
+                  className="px-6 py-2 text-white rounded-full text-sm font-light tracking-[0.1em] uppercase transition-all duration-300"
+                  style={{ background: 'hsl(15 45% 65%)', boxShadow: '0 2px 8px hsl(15 45% 65% / 0.3)' }}
                 >
                   Back to Search
                 </button>
               </div>
             ) : filteredHotels.length === 0 ? (
               <div className="text-center py-20">
-                <p className="text-gray-500">No hotels found matching your criteria.</p>
+                <p style={{ color: 'hsl(30 10% 50%)' }}>No hotels found matching your criteria.</p>
               </div>
             ) : (
               <>
                 {/* Header */}
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="text-lg font-light tracking-wide" style={{ color: 'hsl(30 15% 25%)', fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
                       {filteredHotels.length} hotels found
                     </h2>
                     {latencyMs !== null && (
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <p className="text-xs mt-0.5" style={{ color: 'hsl(30 10% 50%)' }}>
                         Sabre API time: {(latencyMs / 1000).toFixed(1)}s
                       </p>
                     )}
@@ -216,7 +217,8 @@ function ResultsContent() {
                       setSortBy(e.target.value);
                       setCurrentIndex(0);
                     }}
-                    className="px-3 py-1.5 border border-gray-300 rounded bg-white text-sm focus:outline-none focus:ring-1 focus:ring-[#2C5F63]"
+                    className="px-4 py-2 rounded-lg bg-white text-sm focus:outline-none transition-all duration-300"
+                    style={{ border: '1px solid hsl(30 20% 85%)', color: 'hsl(30 15% 25%)' }}
                   >
                     <option value="price-asc">Price per night</option>
                     <option value="price-desc">Price: High to Low</option>
@@ -303,7 +305,7 @@ function ResultsContent() {
                 )}
 
                 {/* Hotel counter */}
-                <p className="text-center text-sm text-gray-500 mt-4">
+                <p className="text-center text-xs tracking-[0.1em] uppercase mt-4" style={{ color: 'hsl(30 10% 50%)' }}>
                   Showing {currentIndex + 1} of {filteredHotels.length} hotels
                 </p>
               </>
@@ -318,8 +320,8 @@ function ResultsContent() {
 export default function ResultsPage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-[#2C5F63]" />
+      <div className="flex items-center justify-center min-h-screen" style={{ background: 'hsl(30 25% 98%)' }}>
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: 'hsl(15 45% 65%)' }} />
       </div>
     }>
       <ResultsContent />
