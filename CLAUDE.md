@@ -13,11 +13,13 @@
 |----------|----------|--------|---------------|
 | 1 | `AUTHENTICATION_FIXED.md` | **THE TRUTH** | V2 EPR Auth (`V1:USER:PCC:DOMAIN`). V3 is NOT provisioned. |
 | 2 | `SEARCH_IMPLEMENTATION_STATUS.md` | **THE TRUTH** | Search uses **V5 API** (`/v5/get/hotelavail`) |
-| 3 | `SABRE_BOOKING_API_MAPPING.md` | **THE TRUTH** | Booking uses **V2 API** (`/v2.0.0/book/hotels`). Field mappings complete. |
-| 4 | `BELLHOPPING_BOOKING_PAYLOAD_CAPTURED.md` | **CAPTURED** | Actual form data from bellhopping.com (2026-01-13) |
-| 5 | `SABRE_AUTH_V3_TEST_RESULTS.md` | **Confirmed** | Documents why V3 fails (not provisioned, not broken) |
-| 6 | `bellhopping.com` (Live Site) | **SPY TARGET** | Reference for UI/UX implementation |
-| 7 | `SABRE_API_REFERENCE.md` | **DEPRECATED** | Field definitions only - NOT for endpoints/auth |
+| 3 | `BOOKING_PAYLOAD_DISCOVERY_PLAN.md` | **THE TRUTH** | Booking endpoint discovery (2026-01-15). Correct: `/v2/book/hotels` with `CreateBookingRQ`. |
+| 4 | `SABRE_SUPPORT_REQUEST.md` | **ACTIVE** | Support request for booking API access (ERR.2SG.SEC.NOT_AUTHORIZED) |
+| 5 | `SABRE_BOOKING_API_MAPPING.md` | **REFERENCE** | Field mappings for booking payload (structure confirmed) |
+| 6 | `BELLHOPPING_BOOKING_PAYLOAD_CAPTURED.md` | **CAPTURED** | Actual form data from bellhopping.com (2026-01-13) |
+| 7 | `SABRE_AUTH_V3_TEST_RESULTS.md` | **Confirmed** | Documents why V3 fails (not provisioned, not broken) |
+| 8 | `bellhopping.com` (Live Site) | **SPY TARGET** | Reference for UI/UX implementation |
+| 9 | `SABRE_API_REFERENCE.md` | **DEPRECATED** | Field definitions only - NOT for endpoints/auth |
 
 ---
 
@@ -99,39 +101,43 @@ claude --teleport <session-id>   # Resume specific session
 - V2 EPR works: `V1:250463:52JL:AA` format
 - Base URL: `https://api.sabre.com` (NOT cert subdomain)
 - Token lasts 7 days (604800 seconds)
-- **Discovery method:** 100+ tests to find working format
-
-### Booking API Access (2026-01-15)
-- **All booking endpoints return 403** on cert environment (PCC 52JL)
-- Endpoints tested: `/v1/book/hotels`, `/v2/book/hotels`, `/v2.0.0/book/hotels`, `/v3/book/hotels`
-- Versionless `/book/hotels`: Returns 200 OK but empty response
-- Error: `ERR.2SG.SEC.NOT_AUTHORIZED - Authorization failed due to no access privileges`
-- **Likely cause:** Cert environment lacks booking privileges, OR different endpoint/payload needed
-- **Next:** Test production credentials, spy on bellhopping.com traffic, or brute force alternatives
 
 ### Search (Complete)
 - V5 API: `POST /v5/get/hotelavail`
 - RefPointType: `"6"` for codes, `"3"` for coordinates
 - Date format: `YYYY-MM-DDT00:00:00`
 
-### Booking (In Progress - 2026-01-15)
-- ✅ **Booking flow captured** from bellhopping.com
-- ❌ **Booking API access denied** - ERR.2SG.SEC.NOT_AUTHORIZED
-- **Discovery Results:**
-  - Tested ALL endpoint variations (V1, V2, V2.0.0, V3, versionless)
-  - All versioned endpoints: 403 Forbidden
-  - Versionless endpoint `/book/hotels`: 200 OK with empty response
-  - PCC 52JL lacks booking API privileges (cert environment)
-- **Next Steps:**
-  - Test production environment credentials
-  - Spy on bellhopping.com actual Sabre API calls
-  - OR continue brute force testing with different payload structures
-- **Critical Fields (when access enabled):**
+### Voice Assistant UI (Complete - 2026-01-15)
+- **Location:** `/assistant` route, powered by OpenAI Realtime API
+- **Design:** iPhone/Siri-inspired premium aesthetic
+- **Features:**
+  - 24-bar waveform animation (state-based: idle, listening, speaking, thinking)
+  - Price range filtering ("around $200", "under $300", etc.)
+  - Glassmorphic controls with gradient buttons
+  - Inter font for clean typography
+  - Subtle gradient background (slate-50 → white → blue-50)
+- **Key Bugs Fixed:**
+  - Tailwind `w-2` compiling to `width: 0px` → Fixed with inline `width: '6px'`
+  - Audio element not in DOM → Added `document.body.appendChild(audioEl)`
+  - AnimatePresence `mode="wait"` causing stuck opacity → Removed prop
+- **Discovery Method:** Browser automation debugging with Chrome DevTools
+
+### Booking (Discovery Complete - 2026-01-15)
+- ✅ **Payload structure discovered** through systematic testing (15 variations)
+- ✅ **Correct endpoint:** `POST https://api.sabre.com/v2/book/hotels`
+- ✅ **Correct wrapper:** `CreateBookingRQ` with `HotelBookInfo` nested structure
+- ✅ **Authentication works:** V2 EPR token accepted
+- ❌ **BLOCKED:** ERR.2SG.SEC.NOT_AUTHORIZED - PCC 52JL lacks booking API permissions
+- **Status:** Both CERT and PRODUCTION return 403 Forbidden
+- **Blocker:** Awaiting Sabre support to enable booking API access
+- **Discovery method:** Tested all endpoint variations, confirmed `/v2/book/hotels` recognizes payload
+- **Critical Fields (for when access is granted):**
   - `RoomTypeCode`, `RateCode` from search results
   - Guest address REQUIRED (line1, city, postal, country)
   - Phone number STRONGLY RECOMMENDED
   - Card type mapping: VISA→VI, MC→MC, AMEX→AX
   - Expiration format: `YYYY-MM`
+- **Next step:** Contact Sabre support with SABRE_SUPPORT_REQUEST.md
 
 ### Chrome Integration
 - Browser MUST be open and connected to CLI
@@ -147,20 +153,23 @@ claude --teleport <session-id>   # Resume specific session
 - [x] V5 Hotel Search API
 - [x] Location Autocomplete
 - [x] Search Results UI
+- [x] Voice Assistant (OpenAI Realtime API)
+- [x] Price Range Filtering for Voice Search
+- [x] Premium UI Redesign (iPhone/Siri-style waveform, glassmorphism)
 
-### Current Focus: Booking Flow Implementation
+### Current Focus: Booking API Access (BLOCKED)
 - [x] Spy on bellhopping.com booking process
 - [x] Capture complete form structure (24+ fields)
-- [x] Map to Sabre API (`/v2.0.0/book/hotels`)
-- [x] Identify missing fields (address, phone)
-- [x] Create TypeScript interfaces
-- [x] Implement booking service (src/lib/sabre/booking.ts) ✅
-- [x] Build booking API endpoint (src/app/api/booking/create/route.ts) ✅
-- [x] Test all endpoint variations (100+ tests) ✅
-- [x] Document findings (SABRE_BOOKING_ENDPOINT_DISCOVERY_RESULTS.md) ✅
-- [ ] **BLOCKED:** Test with production credentials
-- [ ] **BLOCKED:** Spy on bellhopping.com's actual Sabre API traffic
+- [x] Discover correct endpoint and payload structure (15 test variations)
+- [x] Confirm `/v2/book/hotels` with `CreateBookingRQ` wrapper
+- [x] Test both CERT and PRODUCTION environments
+- [x] Identify blocker: PCC 52JL lacks booking API permissions
+- [x] Create Sabre support request documentation
+- [ ] **BLOCKED:** Contact Sabre support for API access provisioning
+- [ ] Test booking with real access (once granted)
 - [ ] Update booking form UI (add address, phone)
+- [ ] Implement booking service (src/lib/sabre/booking.ts)
+- [ ] Build booking API endpoint (src/app/api/booking/create/route.ts)
 - [ ] Create confirmation page
 - [ ] End-to-end testing
 
@@ -181,10 +190,14 @@ curl http://localhost:3000/api/auth/test
 
 ### Key Files
 ```
-src/lib/sabre/auth.ts     # V2 EPR authentication
-src/lib/sabre/search.ts   # V5 hotel search
-src/app/api/search/hotels/route.ts  # Search endpoint
-prisma/schema.prisma      # Booking model ready
+src/lib/sabre/auth.ts                        # V2 EPR authentication
+src/lib/sabre/search.ts                      # V5 hotel search
+src/app/api/search/hotels/route.ts           # Search endpoint
+src/app/assistant/page.tsx                   # Voice assistant page
+src/components/assistant/PresenceOrb.tsx     # iPhone-style waveform (24 bars)
+src/hooks/useRealtimeSession.ts              # OpenAI Realtime API integration
+src/lib/assistant/tools.ts                   # AI function definitions (searchHotels, etc.)
+prisma/schema.prisma                         # Booking model ready
 ```
 
 ---

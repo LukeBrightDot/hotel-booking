@@ -1,0 +1,254 @@
+{
+  "timestamp": "2026-01-15T04:14:04.146Z",
+  "totalTests": 15,
+  "breakthroughs": 1,
+  "empty200s": 14,
+  "errors": 1,
+  "results": [
+    {
+      "id": 1,
+      "name": "CreateBookingRQ Wrapper (Minimal)",
+      "priority": "HIGH",
+      "status": 200,
+      "hasContent": false,
+      "analysis": "EMPTY 200 - Payload not recognized (wrong structure)",
+      "responseTime": 51,
+      "responseBody": "",
+      "payloadSent": {
+        "CreateBookingRQ": {
+          "version": "2.0.0"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "name": "HotelBookRQ Wrapper (Minimal)",
+      "priority": "HIGH",
+      "status": 200,
+      "hasContent": false,
+      "analysis": "EMPTY 200 - Payload not recognized (wrong structure)",
+      "responseTime": 53,
+      "responseBody": "",
+      "payloadSent": {
+        "HotelBookRQ": {
+          "version": "2.0.0"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "name": "OTA_HotelResRQ Wrapper (OTA Standard)",
+      "priority": "HIGH",
+      "status": 200,
+      "hasContent": false,
+      "analysis": "EMPTY 200 - Payload not recognized (wrong structure)",
+      "responseTime": 57,
+      "responseBody": "",
+      "payloadSent": {
+        "OTA_HotelResRQ": {
+          "Version": "2.0"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "name": "EnhancedHotelBookRQ (Enhanced Pattern)",
+      "priority": "HIGH",
+      "status": 200,
+      "hasContent": false,
+      "analysis": "EMPTY 200 - Payload not recognized (wrong structure)",
+      "responseTime": 56,
+      "responseBody": "",
+      "payloadSent": {
+        "EnhancedHotelBookRQ": {
+          "version": "2.0.0"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "name": "CreateBookingRQ with HotelBookInfo",
+      "priority": "HIGH",
+      "status": 200,
+      "hasContent": false,
+      "analysis": "EMPTY 200 - Payload not recognized (wrong structure)",
+      "responseTime": 68,
+      "responseBody": "",
+      "payloadSent": {
+        "CreateBookingRQ": {
+          "HotelBookInfo": {
+            "HotelCode": "325913",
+            "CodeContext": "SABRE",
+            "StayDateRange": {
+              "StartDate": "2026-01-25",
+              "EndDate": "2026-01-27"
+            },
+            "RoomSelection": {
+              "RoomTypeCode": "A1K",
+              "RateCode": "RAC",
+              "NumRooms": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "name": "Flat Structure (No Wrapper)",
+      "priority": "MEDIUM",
+      "status": 200,
+      "hasContent": false,
+      "analysis": "EMPTY 200 - Payload not recognized (wrong structure)",
+      "responseTime": 56,
+      "responseBody": "",
+      "payloadSent": {
+        "hotelCode": "325913",
+        "checkIn": "2026-01-25",
+        "checkOut": "2026-01-27"
+      }
+    },
+    {
+      "id": 7,
+      "name": "HotelReservation Root Element",
+      "priority": "MEDIUM",
+      "status": 200,
+      "hasContent": false,
+      "analysis": "EMPTY 200 - Payload not recognized (wrong structure)",
+      "responseTime": 51,
+      "responseBody": "",
+      "payloadSent": {
+        "HotelReservation": {
+          "HotelCode": "325913",
+          "StartDate": "2026-01-25",
+          "EndDate": "2026-01-27"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "name": "PassengerNameRecord Pattern",
+      "priority": "MEDIUM",
+      "status": 200,
+      "hasContent": false,
+      "analysis": "EMPTY 200 - Payload not recognized (wrong structure)",
+      "responseTime": 62,
+      "responseBody": "",
+      "payloadSent": {
+        "CreatePNR_RQ": {
+          "HotelSegment": {
+            "HotelCode": "325913"
+          }
+        }
+      }
+    },
+    {
+      "id": 9,
+      "name": "Version at Root Level",
+      "priority": "MEDIUM",
+      "status": 200,
+      "hasContent": false,
+      "analysis": "EMPTY 200 - Payload not recognized (wrong structure)",
+      "responseTime": 50,
+      "responseBody": "",
+      "payloadSent": {
+        "version": "2.0.0",
+        "request": {
+          "hotelCode": "325913"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "name": "Form-Encoded (Like Auth)",
+      "priority": "MEDIUM",
+      "status": 200,
+      "hasContent": false,
+      "analysis": "EMPTY 200 - Payload not recognized (wrong structure)",
+      "responseTime": 54,
+      "responseBody": "",
+      "payloadSent": {
+        "HotelCode": "325913",
+        "CheckIn": "2026-01-25",
+        "CheckOut": "2026-01-27"
+      }
+    },
+    {
+      "id": 11,
+      "name": "Empty Object (Echo Test)",
+      "priority": "LOW",
+      "status": 200,
+      "hasContent": false,
+      "analysis": "EMPTY 200 - Payload not recognized (wrong structure)",
+      "responseTime": 55,
+      "responseBody": "",
+      "payloadSent": {}
+    },
+    {
+      "id": 12,
+      "name": "BookingRequest Generic",
+      "priority": "LOW",
+      "status": 200,
+      "hasContent": false,
+      "analysis": "EMPTY 200 - Payload not recognized (wrong structure)",
+      "responseTime": 59,
+      "responseBody": "",
+      "payloadSent": {
+        "BookingRequest": {
+          "hotelId": "325913",
+          "dates": {
+            "start": "2026-01-25",
+            "end": "2026-01-27"
+          }
+        }
+      }
+    },
+    {
+      "id": 13,
+      "name": "SABRE_HotelBookRQ (Prefixed)",
+      "priority": "LOW",
+      "status": 200,
+      "hasContent": false,
+      "analysis": "EMPTY 200 - Payload not recognized (wrong structure)",
+      "responseTime": 51,
+      "responseBody": "",
+      "payloadSent": {
+        "SABRE_HotelBookRQ": {
+          "HotelCode": "325913"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "name": "V2 Versioned Endpoint",
+      "priority": "LOW",
+      "status": 403,
+      "hasContent": true,
+      "analysis": "VALIDATION ERROR - Payload recognized but invalid!",
+      "responseTime": 68,
+      "responseBody": "{\"status\":\"NotProcessed\",\"type\":\"Validation\",\"errorCode\":\"ERR.2SG.SEC.NOT_AUTHORIZED\",\"timeStamp\":\"2026-01-15T04:14:03.117Z\",\"message\":\"Authorization failed due to no access privileges\"}",
+      "payloadSent": {
+        "CreateBookingRQ": {
+          "version": "2.0.0",
+          "HotelBookInfo": {
+            "HotelCode": "325913"
+          }
+        }
+      }
+    },
+    {
+      "id": 15,
+      "name": "XML Content-Type with JSON",
+      "priority": "LOW",
+      "status": 200,
+      "hasContent": false,
+      "analysis": "EMPTY 200 - Payload not recognized (wrong structure)",
+      "responseTime": 53,
+      "responseBody": "",
+      "payloadSent": {
+        "CreateBookingRQ": {
+          "HotelCode": "325913"
+        }
+      }
+    }
+  ]
+}

@@ -29,6 +29,14 @@ export const assistantTools = [
           type: 'number',
           description: 'Number of rooms needed (default 1)',
         },
+        minPrice: {
+          type: 'number',
+          description: 'Minimum price per night in USD (optional). Use this when user specifies a price range like "around $200" (set to 180) or "under $300" (set to 0).',
+        },
+        maxPrice: {
+          type: 'number',
+          description: 'Maximum price per night in USD (optional). Use this when user specifies a price range like "around $200" (set to 220) or "under $300" (set to 300).',
+        },
       },
       required: ['destination', 'checkInDate', 'checkOutDate', 'guests'],
     },
@@ -88,6 +96,8 @@ export interface SearchHotelsArgs {
   checkOutDate: string;
   guests: number;
   rooms?: number;
+  minPrice?: number;
+  maxPrice?: number;
 }
 
 export interface GetHotelDetailsArgs {

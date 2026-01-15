@@ -49,7 +49,7 @@ export function TranscriptDisplay({
   }, [lastMessage?.id, lastMessage?.content, lastMessage?.role]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-8">
+    <div className="w-full max-w-3xl mx-auto px-8">
       <AnimatePresence mode="wait">
         {/* Current assistant message with typewriter */}
         {lastMessage?.role === 'assistant' && (
@@ -61,13 +61,13 @@ export function TranscriptDisplay({
             transition={{ duration: 0.5, ease: 'easeOut' }}
             className="text-center"
           >
-            <p className="text-2xl md:text-3xl font-light text-gray-800 leading-relaxed">
+            <p className="text-2xl md:text-3xl font-light text-slate-800 leading-relaxed tracking-tight antialiased">
               {isTyping ? displayedText : lastMessage.content}
               {isTyping && (
                 <motion.span
                   animate={{ opacity: [1, 0] }}
                   transition={{ duration: 0.5, repeat: Infinity }}
-                  className="inline-block w-0.5 h-7 bg-gray-400 ml-1 align-middle"
+                  className="inline-block w-0.5 h-8 bg-slate-400 ml-1 align-middle"
                 />
               )}
             </p>
@@ -83,7 +83,7 @@ export function TranscriptDisplay({
             exit={{ opacity: 0 }}
             className="text-center mt-8"
           >
-            <p className="text-xl text-gray-500 italic">
+            <p className="text-xl text-slate-500 italic font-light tracking-wide">
               &ldquo;{currentTranscript}&rdquo;
             </p>
           </motion.div>
@@ -98,7 +98,7 @@ export function TranscriptDisplay({
             exit={{ opacity: 0 }}
             className="text-center mt-8"
           >
-            <p className="text-lg text-gray-400">Listening...</p>
+            <p className="text-lg text-slate-400 font-light tracking-wide">Listening...</p>
           </motion.div>
         )}
       </AnimatePresence>

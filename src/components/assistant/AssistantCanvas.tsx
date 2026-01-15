@@ -174,26 +174,26 @@ export function AssistantCanvas() {
   }, [sessionState, disconnect]);
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8] flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 flex flex-col">
       {/* Minimal header */}
       <motion.header
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 2, duration: 1 }}
-        className="fixed top-0 left-0 right-0 z-50 p-4"
+        className="fixed top-0 left-0 right-0 z-50 p-6"
       >
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-gray-400 hover:text-gray-600 transition-colors"
+          className="inline-flex items-center gap-2 text-gray-400 hover:text-gray-700 transition-all duration-200 font-medium"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm">Back to search</span>
+          <span className="text-sm tracking-wide">Back to search</span>
         </Link>
       </motion.header>
 
       {/* Main content area */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-20">
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {/* Initial blank state */}
           {showIntro && (
             <motion.div
@@ -209,13 +209,27 @@ export function AssistantCanvas() {
           {!showIntro && sessionState === 'connecting' && (
             <motion.div
               key="connecting"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col items-center gap-4"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="flex flex-col items-center gap-6"
             >
-              <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
-              <p className="text-gray-500">Connecting...</p>
+              <div className="relative">
+                <Loader2 className="w-16 h-16 text-teal-500 animate-spin" />
+                <motion.div
+                  className="absolute inset-0 rounded-full bg-teal-500/20"
+                  animate={{
+                    scale: [1, 1.3, 1],
+                    opacity: [0.5, 0, 0.5],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: 'easeOut',
+                  }}
+                />
+              </div>
+              <p className="text-slate-500 font-light text-lg tracking-wide">Connecting...</p>
             </motion.div>
           )}
 
@@ -223,14 +237,14 @@ export function AssistantCanvas() {
           {sessionState === 'error' && (
             <motion.div
               key="error"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center max-w-md"
             >
-              <p className="text-red-500 mb-4">{error || 'Connection failed'}</p>
+              <p className="text-red-500 mb-6 font-light tracking-wide">{error || 'Connection failed'}</p>
               <button
                 onClick={connect}
-                className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+                className="px-8 py-3 bg-gradient-to-br from-teal-500 to-teal-600 text-white rounded-full hover:shadow-xl hover:scale-105 transition-all duration-300 font-medium tracking-wide"
               >
                 Try Again
               </button>
@@ -243,7 +257,7 @@ export function AssistantCanvas() {
               key="connected"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
               className="flex flex-col items-center gap-12 w-full"
             >
               {/* Presence orb */}
@@ -251,8 +265,9 @@ export function AssistantCanvas() {
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.6, ease: 'easeOut' }}
+                className="mb-4"
               >
-                <PresenceOrb state={assistantState} />
+                <PresenceOrb state={assistantState} className="h-20" />
               </motion.div>
 
               {/* Transcript display */}

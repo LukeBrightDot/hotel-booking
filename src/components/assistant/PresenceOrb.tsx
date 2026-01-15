@@ -8,152 +8,99 @@ interface PresenceOrbProps {
 }
 
 export function PresenceOrb({ state, className = '' }: PresenceOrbProps) {
-  // Animation configs with proper typing
-  const speakingAnimation = {
-    scale: [1, 1.15, 1.05, 1.12, 1],
-    opacity: [0.8, 1, 0.9, 1, 0.8],
-  };
+  // Number of bars for the waveform (iPhone-style) - NEW WAVEFORM CODE v2
+  const barCount = 24;
+  const bars = Array.from({ length: barCount }, (_, i) => i);
 
-  const listeningAnimation = {
-    scale: [1, 1.08, 1],
-    opacity: [0.7, 0.9, 0.7],
-  };
+  // Get bar height based on state and position
+  const getBarHeight = (index: number) => {
+    const center = barCount / 2;
+    const distanceFromCenter = Math.abs(index - center);
+    const normalizedDistance = distanceFromCenter / center;
 
-  const thinkingAnimation = {
-    scale: [1, 1.03, 1],
-    opacity: [0.6, 0.8, 0.6],
-  };
-
-  const idleAnimation = {
-    scale: [1, 1.02, 1],
-    opacity: [0.5, 0.6, 0.5],
-  };
-
-  const getAnimation = () => {
     switch (state) {
       case 'speaking':
-        return speakingAnimation;
+        // Active waveform - varies by position
+        return {
+          height: [
+            10 + Math.random() * 40,
+            60 - normalizedDistance * 30,
+            10 + Math.random() * 40,
+          ],
+        };
       case 'listening':
-        return listeningAnimation;
+        // Gentle pulse from center
+        return {
+          height: [
+            20,
+            40 - normalizedDistance * 20,
+            20,
+          ],
+        };
       case 'thinking':
-        return thinkingAnimation;
+        // Slow wave pattern
+        return {
+          height: [
+            15,
+            25 - normalizedDistance * 10,
+            15,
+          ],
+        };
       default:
-        return idleAnimation;
+        // Idle - minimal height
+        return {
+          height: [10, 12, 10],
+        };
     }
   };
 
-  const getTransitionDuration = () => {
+  const getAnimationSpeed = () => {
     switch (state) {
       case 'speaking':
+        return 0.6;
+      case 'listening':
         return 1.2;
-      case 'listening':
-        return 1.5;
       case 'thinking':
-        return 2;
+        return 2.0;
       default:
-        return 4;
+        return 3.0;
     }
   };
 
-  const getGlowShadows = () => {
-    switch (state) {
-      case 'speaking':
-        return [
-          '0 0 60px rgba(124, 181, 179, 0.4)',
-          '0 0 100px rgba(124, 181, 179, 0.6)',
-          '0 0 60px rgba(124, 181, 179, 0.4)',
-        ];
-      case 'listening':
-        return [
-          '0 0 50px rgba(217, 160, 33, 0.3)',
-          '0 0 80px rgba(217, 160, 33, 0.5)',
-          '0 0 50px rgba(217, 160, 33, 0.3)',
-        ];
-      case 'thinking':
-        return [
-          '0 0 40px rgba(124, 181, 179, 0.2)',
-          '0 0 60px rgba(124, 181, 179, 0.4)',
-          '0 0 40px rgba(124, 181, 179, 0.2)',
-        ];
-      default:
-        return [
-          '0 0 40px rgba(124, 181, 179, 0.2)',
-          '0 0 50px rgba(124, 181, 179, 0.3)',
-          '0 0 40px rgba(124, 181, 179, 0.2)',
-        ];
-    }
-  };
-
-  const getOrbColor = () => {
+  const getBarColor = () => {
     switch (state) {
       case 'listening':
-        return 'radial-gradient(circle, rgba(217, 160, 33, 0.8) 0%, rgba(217, 160, 33, 0.4) 40%, transparent 70%)';
+        return '#D9A021'; // Gold
       case 'speaking':
+        return '#2C5F63'; // Teal
       case 'thinking':
+        return '#7CB5B3'; // Light teal
       default:
-        return 'radial-gradient(circle, rgba(124, 181, 179, 0.9) 0%, rgba(124, 181, 179, 0.5) 40%, transparent 70%)';
+        return '#CBD5E1'; // Gray
     }
   };
-
-  const duration = getTransitionDuration();
 
   return (
-    <div className={`relative ${className}`}>
-      {/* Outer glow */}
-      <motion.div
-        className="absolute inset-0 rounded-full"
-        animate={{ boxShadow: getGlowShadows() }}
-        transition={{
-          duration,
-          repeat: Infinity,
-          ease: 'easeInOut' as const,
-        }}
-        style={{
-          width: '120px',
-          height: '120px',
-          left: '-20px',
-          top: '-20px',
-        }}
-      />
-
-      {/* Main orb */}
-      <motion.div
-        className="relative rounded-full"
-        animate={getAnimation()}
-        transition={{
-          duration,
-          repeat: Infinity,
-          ease: 'easeInOut' as const,
-        }}
-        style={{
-          width: '80px',
-          height: '80px',
-          background: getOrbColor(),
-        }}
-      />
-
-      {/* Inner core */}
-      <motion.div
-        className="absolute rounded-full"
-        animate={{
-          opacity: state === 'speaking' ? [0.8, 1, 0.8] : [0.4, 0.6, 0.4],
-        }}
-        transition={{
-          duration: state === 'speaking' ? 0.8 : 2,
-          repeat: Infinity,
-          ease: 'easeInOut' as const,
-        }}
-        style={{
-          width: '30px',
-          height: '30px',
-          left: '25px',
-          top: '25px',
-          background:
-            state === 'listening'
-              ? 'radial-gradient(circle, rgba(217, 160, 33, 1) 0%, transparent 70%)'
-              : 'radial-gradient(circle, rgba(124, 181, 179, 1) 0%, transparent 70%)',
-        }}
-      />
+    <div className={`relative flex items-end justify-center gap-1.5 ${className}`}>
+      {bars.map((index) => (
+        <motion.div
+          key={index}
+          className="rounded-full"
+          style={{
+            width: '6px',
+            backgroundColor: getBarColor(),
+            transformOrigin: 'bottom',
+          }}
+          initial={{ height: 10 }}
+          animate={getBarHeight(index)}
+          transition={{
+            duration: getAnimationSpeed(),
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: index * 0.02, // Stagger for wave effect
+          }}
+        />
+      ))}
     </div>
   );
 }

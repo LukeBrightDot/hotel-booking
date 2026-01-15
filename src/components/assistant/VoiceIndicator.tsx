@@ -27,19 +27,19 @@ export function VoiceIndicator({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5, duration: 0.5 }}
-      className="flex items-center gap-6"
+      className="flex items-center gap-6 bg-white/80 backdrop-blur-xl px-8 py-4 rounded-full shadow-lg border border-slate-200/50"
     >
       {/* Microphone toggle */}
       <button
         onClick={onToggleMic}
         className={`
-          relative p-4 rounded-full transition-all duration-300
+          relative p-5 rounded-full transition-all duration-300 shadow-md
           ${
             isMuted
-              ? 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+              ? 'bg-slate-100 text-slate-400 hover:bg-slate-200 hover:shadow-lg'
               : isListening
-              ? 'bg-amber-50 text-amber-600'
-              : 'bg-teal-50 text-teal-600 hover:bg-teal-100'
+              ? 'bg-gradient-to-br from-amber-400 to-amber-500 text-white shadow-amber-200'
+              : 'bg-gradient-to-br from-teal-500 to-teal-600 text-white hover:shadow-xl hover:scale-105'
           }
         `}
         aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
@@ -53,9 +53,9 @@ export function VoiceIndicator({
         {/* Listening animation ring */}
         {isListening && !isMuted && (
           <motion.div
-            className="absolute inset-0 rounded-full border-2 border-amber-400"
+            className="absolute inset-0 rounded-full border-2 border-amber-300"
             animate={{
-              scale: [1, 1.3, 1],
+              scale: [1, 1.4, 1],
               opacity: [0.8, 0, 0.8],
             }}
             transition={{
@@ -71,11 +71,11 @@ export function VoiceIndicator({
       <button
         onClick={onToggleSpeaker}
         className={`
-          p-4 rounded-full transition-all duration-300
+          p-5 rounded-full transition-all duration-300 shadow-md
           ${
             isSpeakerOn
-              ? 'bg-teal-50 text-teal-600 hover:bg-teal-100'
-              : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+              ? 'bg-gradient-to-br from-teal-500 to-teal-600 text-white hover:shadow-xl hover:scale-105'
+              : 'bg-slate-100 text-slate-400 hover:bg-slate-200 hover:shadow-lg'
           }
         `}
         aria-label={isSpeakerOn ? 'Mute speaker' : 'Unmute speaker'}
@@ -91,8 +91,8 @@ export function VoiceIndicator({
       <motion.span
         key={isListening ? 'listening' : 'ready'}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.6 }}
-        className="text-sm text-gray-500 ml-2"
+        animate={{ opacity: 0.7 }}
+        className="text-sm text-slate-600 ml-2 font-medium tracking-wide"
       >
         {isMuted ? 'Microphone off' : isListening ? 'Listening...' : 'Ready'}
       </motion.span>

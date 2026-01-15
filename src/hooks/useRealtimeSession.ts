@@ -114,8 +114,21 @@ export function useRealtimeSession(options: UseRealtimeSessionOptions = {}) {
                 console.log('🔧 HOOK: searchHotels tool called with args:', data.arguments);
                 const args = JSON.parse(data.arguments) as SearchHotelsArgs;
                 console.log('🔧 HOOK: Calling onSearchHotels handler...');
-                const results = await options.onSearchHotels(args);
+                let results = await options.onSearchHotels(args);
                 console.log('🔧 HOOK: Search completed, got', results.length, 'results');
+
+                // Apply price filtering if specified
+                if (args.minPrice !== undefined || args.maxPrice !== undefined) {
+                  const originalCount = results.length;
+                  results = results.filter(hotel => {
+                    const price = hotel.lowestRate;
+                    const meetsMin = args.minPrice === undefined || price >= args.minPrice;
+                    const meetsMax = args.maxPrice === undefined || price <= args.maxPrice;
+                    return meetsMin && meetsMax;
+                  });
+                  console.log(`🔧 HOOK: Price filter applied (${args.minPrice || 0}-${args.maxPrice || '∞'}): ${originalCount} → ${results.length} hotels`);
+                }
+
                 setSearchResults(results);
 
                 // Send function result back
@@ -220,6 +233,7 @@ export function useRealtimeSession(options: UseRealtimeSessionOptions = {}) {
       // Set up audio element for playback
       const audioEl = document.createElement('audio');
       audioEl.autoplay = true;
+      document.body.appendChild(audioEl);
       audioElementRef.current = audioEl;
 
       pc.ontrack = (event) => {
@@ -308,11 +322,13 @@ export function useRealtimeSession(options: UseRealtimeSessionOptions = {}) {
     }
     if (audioElementRef.current) {
       audioElementRef.current.srcObject = null;
+      document.body.removeChild(audioElementRef.current);
     }
 
     peerConnectionRef.current = null;
     dataChannelRef.current = null;
     mediaStreamRef.current = null;
+    audioElementRef.current = null;
 
     setSessionState('disconnected');
     setAssistantState('idle');
