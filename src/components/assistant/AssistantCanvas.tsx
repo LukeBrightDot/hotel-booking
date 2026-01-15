@@ -246,82 +246,62 @@ export function AssistantCanvas() {
   const isCompact = displayState === 'results' && showResults;
 
   return (
-    <div className="min-h-screen flex flex-col items-center px-6 pt-8"
-         style={{ background: 'hsl(30 25% 98%)' }}>
-
-      {/* Voice controls at top */}
-      {sessionState === 'connected' && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-          className="flex items-center gap-2 mb-8"
-        >
-          <button
-            onClick={toggleMic}
-            className="relative p-3 rounded-full transition-all duration-300"
-            style={{
-              background: isMuted
-                ? 'hsl(30 15% 92%)'
-                : assistantState === 'listening'
-                ? 'hsl(15 45% 65%)'
-                : 'hsl(35 50% 75%)',
-              color: isMuted ? 'hsl(30 10% 50%)' : 'white',
-              boxShadow: isMuted ? 'none' : '0 2px 8px hsl(15 45% 65% / 0.25)',
-            }}
-            aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
-          >
-            {isMuted ? (
-              <MicOff className="w-4 h-4" />
-            ) : (
-              <Mic className="w-4 h-4" />
-            )}
-            {assistantState === 'listening' && !isMuted && (
-              <motion.div
-                className="absolute inset-0 rounded-full"
-                style={{ border: '2px solid hsl(15 45% 75%)' }}
-                animate={{ scale: [1, 1.4, 1], opacity: [0.8, 0, 0.8] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
-              />
-            )}
-          </button>
-          <button
-            onClick={toggleSpeaker}
-            className="p-3 rounded-full transition-all duration-300"
-            style={{
-              background: isSpeakerOn ? 'hsl(35 50% 75%)' : 'hsl(30 15% 92%)',
-              color: isSpeakerOn ? 'white' : 'hsl(30 10% 50%)',
-              boxShadow: isSpeakerOn ? '0 2px 8px hsl(35 50% 75% / 0.25)' : 'none',
-            }}
-            aria-label={isSpeakerOn ? 'Mute speaker' : 'Unmute speaker'}
-          >
-            {isSpeakerOn ? (
-              <Volume2 className="w-4 h-4" />
-            ) : (
-              <VolumeX className="w-4 h-4" />
-            )}
-          </button>
-        </motion.div>
-      )}
-
-      {/* Main visualization area */}
+    <div className="min-h-screen bg-background flex flex-col items-center px-6 pt-16">
+      {/* Main visualization area - moves up smoothly when results appear */}
       <div className={`relative flex flex-col items-center w-full max-w-4xl transition-all duration-700 ease-out
                       ${isCompact ? 'flex-none' : 'flex-1 justify-center'}`}>
 
-        {/* Status indicator - positioned above particles with proper spacing */}
-        <div className="mb-8 transition-all duration-500">
-          <span
-            className={`tracking-[0.2em] uppercase transition-opacity duration-300 ${
-              displayState === 'searching' ? 'animate-pulse' : ''
-            }`}
-            style={{
-              color: 'hsl(30 10% 50%)',
-              fontFamily: "'Inter', system-ui, sans-serif",
-              fontSize: '0.7rem',
-              fontWeight: 200,
-              letterSpacing: '0.25em',
-            }}
+        {/* Voice controls - positioned above status */}
+        {sessionState === 'connected' && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="flex items-center gap-2 mb-6"
           >
+            <button
+              onClick={toggleMic}
+              className="relative p-3 rounded-full transition-all duration-300"
+              style={{
+                background: isMuted
+                  ? 'hsl(var(--muted))'
+                  : assistantState === 'listening'
+                  ? 'hsl(var(--primary))'
+                  : 'hsl(var(--accent))',
+                color: isMuted ? 'hsl(var(--muted-foreground))' : 'white',
+                boxShadow: isMuted ? 'none' : '0 2px 8px hsl(var(--primary) / 0.25)',
+              }}
+              aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
+            >
+              {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              {assistantState === 'listening' && !isMuted && (
+                <motion.div
+                  className="absolute inset-0 rounded-full border-2"
+                  style={{ borderColor: 'hsl(var(--highlight))' }}
+                  animate={{ scale: [1, 1.4, 1], opacity: [0.8, 0, 0.8] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
+                />
+              )}
+            </button>
+            <button
+              onClick={toggleSpeaker}
+              className="p-3 rounded-full transition-all duration-300"
+              style={{
+                background: isSpeakerOn ? 'hsl(var(--accent))' : 'hsl(var(--muted))',
+                color: isSpeakerOn ? 'white' : 'hsl(var(--muted-foreground))',
+                boxShadow: isSpeakerOn ? '0 2px 8px hsl(var(--accent) / 0.25)' : 'none',
+              }}
+              aria-label={isSpeakerOn ? 'Mute speaker' : 'Unmute speaker'}
+            >
+              {isSpeakerOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+          </motion.div>
+        )}
+
+        {/* Status indicator */}
+        <div className="mb-6 transition-all duration-500">
+          <span className={`text-elegant text-muted-foreground transition-opacity duration-300
+                          ${displayState === 'searching' ? 'animate-pulse' : 'animate-pulse-soft'}`}>
             {sessionState === 'connecting' && 'Connecting...'}
             {sessionState === 'connected' && displayState === 'idle' && 'Ready'}
             {sessionState === 'connected' && displayState === 'listening' && 'Listening...'}
@@ -351,7 +331,7 @@ export function AssistantCanvas() {
               exit={{ opacity: 0, scale: 0.9 }}
               className="flex flex-col items-center gap-6"
             >
-              <Loader2 className="w-12 h-12 animate-spin" style={{ color: 'hsl(15 45% 65%)' }} />
+              <Loader2 className="w-12 h-12 animate-spin text-primary" />
             </motion.div>
           )}
 
@@ -362,11 +342,10 @@ export function AssistantCanvas() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center max-w-md"
             >
-              <p className="text-red-400 mb-6 font-light tracking-wide">{error || 'Connection failed'}</p>
+              <p className="text-destructive mb-6 font-light tracking-wide">{error || 'Connection failed'}</p>
               <button
                 onClick={connect}
-                className="px-8 py-3 text-white rounded-full hover:shadow-xl transition-all duration-300 font-medium tracking-wide"
-                style={{ background: 'hsl(15 45% 65%)' }}
+                className="px-8 py-3 text-primary-foreground bg-primary rounded-full hover:shadow-xl transition-all duration-300 font-medium tracking-wide"
               >
                 Try Again
               </button>
@@ -432,15 +411,8 @@ export function AssistantCanvas() {
       </div>
 
       {/* Subtle branding at bottom */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 pointer-events-none">
-        <span
-          className="tracking-[0.3em] uppercase"
-          style={{
-            color: 'hsl(30 10% 70%)',
-            fontSize: '0.65rem',
-            fontWeight: 200,
-          }}
-        >
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 pointer-events-none">
+        <span className="text-elegant text-muted-foreground/40 tracking-[0.3em]">
           Bellhopping AI
         </span>
       </div>

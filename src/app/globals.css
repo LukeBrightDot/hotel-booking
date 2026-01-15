@@ -1,42 +1,128 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@200;300;400&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   "Her" Inspired Design System
+   Ultra-luxury warm palette
+   ============================================ */
+
 @layer base {
+  :root {
+    /* Ultra-luxury warm palette inspired by "Her" */
+    --background: 30 25% 98%;
+    --foreground: 30 15% 15%;
+
+    --card: 30 20% 96%;
+    --card-foreground: 30 15% 15%;
+
+    --popover: 30 20% 96%;
+    --popover-foreground: 30 15% 15%;
+
+    /* Muted rose/champagne primary */
+    --primary: 15 45% 65%;
+    --primary-foreground: 30 25% 98%;
+
+    /* Soft cream secondary */
+    --secondary: 35 30% 92%;
+    --secondary-foreground: 30 15% 25%;
+
+    --muted: 30 15% 90%;
+    --muted-foreground: 30 10% 50%;
+
+    /* Warm champagne accent */
+    --accent: 35 50% 75%;
+    --accent-foreground: 30 15% 15%;
+
+    /* Soft coral for highlights */
+    --highlight: 15 60% 70%;
+    --highlight-foreground: 30 25% 98%;
+
+    /* Gold accent for luxury touches */
+    --gold: 40 45% 55%;
+    --gold-muted: 40 30% 75%;
+
+    --destructive: 0 60% 50%;
+    --destructive-foreground: 30 25% 98%;
+
+    --border: 30 20% 88%;
+    --input: 30 20% 88%;
+    --ring: 15 45% 65%;
+
+    --radius: 0.75rem;
+
+    /* Typography */
+    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-sans: 'Inter', system-ui, sans-serif;
+
+    /* Particle colors - multi-color palette */
+    --particle-gold: 42 65% 58%;
+    --particle-navy: 220 60% 35%;
+    --particle-royal-green: 160 45% 40%;
+    --particle-rose: 15 55% 70%;
+    --particle-champagne: 35 45% 75%;
+    --particle-coral: 25 50% 72%;
+
+    /* Animation timing */
+    --transition-slow: 800ms;
+    --transition-medium: 400ms;
+    --transition-fast: 200ms;
+
+    /* Shadows */
+    --shadow-glow: 0 0 60px hsl(15 45% 65% / 0.15);
+    --shadow-soft: 0 4px 20px hsl(30 15% 15% / 0.05);
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background-color: hsl(210, 25%, 98%);
-    color: hsl(210, 40%, 15%);
+    font-family: var(--font-sans);
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
   }
 }
 
-/* Bellhopping design system - Primary colors */
-:root {
-  --color-primary: #2C5F63; /* Dark Teal */
-  --color-accent: #D9A021; /* Gold */
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 185 54% 28%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 185 54% 28%;
-  --radius: 0.5rem;
+@layer utilities {
+  /* Luxury text styles */
+  .text-luxury {
+    font-family: var(--font-serif);
+    font-weight: 300;
+    letter-spacing: 0.025em;
+  }
+
+  .text-elegant {
+    font-family: var(--font-sans);
+    font-weight: 200;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-size: 0.65rem;
+  }
+
+  /* Glass effect */
+  .glass {
+    background: hsl(var(--background) / 0.6);
+    backdrop-filter: blur(20px);
+  }
+
+  .glass-subtle {
+    background: hsl(var(--background) / 0.3);
+    backdrop-filter: blur(12px);
+  }
+
+  /* Glow effect */
+  .glow-primary {
+    box-shadow: var(--shadow-glow);
+  }
 }
 
 /* Bellhopping Calendar Styling */

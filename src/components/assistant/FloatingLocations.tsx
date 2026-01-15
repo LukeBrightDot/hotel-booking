@@ -143,17 +143,7 @@ export const FloatingLocations: React.FC<FloatingLocationsProps> = ({
               opacity: location.opacity,
             }}
           >
-            <span
-              className="whitespace-nowrap"
-              style={{
-                color: 'hsl(30 10% 50% / 0.7)',
-                fontSize: '0.65rem',
-                fontWeight: 200,
-                letterSpacing: '0.2em',
-                textTransform: 'uppercase',
-                fontFamily: "'Inter', system-ui, sans-serif",
-              }}
-            >
+            <span className="text-elegant text-muted-foreground/70 whitespace-nowrap">
               {location.name}
             </span>
           </div>

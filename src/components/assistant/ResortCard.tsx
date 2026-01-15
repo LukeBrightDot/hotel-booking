@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Star } from 'lucide-react';
 
 export interface Resort {
   id: string;
@@ -30,62 +29,50 @@ export const ResortCard: React.FC<ResortCardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`group backdrop-blur-sm rounded-xl p-5 transition-all duration-500 cursor-pointer animate-card-entrance ${className}`}
+      className={`group bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6
+                  hover:bg-card/80 hover:border-primary/20 hover:shadow-lg
+                  transition-all duration-500 cursor-pointer animate-card-entrance ${className}`}
       style={{
         animationDelay: `${index * 150}ms`,
-        background: 'hsl(30 30% 99% / 0.8)',
-        border: '1px solid hsl(30 20% 90% / 0.5)',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.background = 'hsl(30 30% 99% / 0.95)';
-        e.currentTarget.style.borderColor = 'hsl(15 45% 75% / 0.5)';
-        e.currentTarget.style.boxShadow = '0 8px 32px hsl(15 30% 70% / 0.15)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = 'hsl(30 30% 99% / 0.8)';
-        e.currentTarget.style.borderColor = 'hsl(30 20% 90% / 0.5)';
-        e.currentTarget.style.boxShadow = 'none';
       }}
     >
       {/* Resort Image */}
       {resort.imageUrl && (
-        <div className="relative h-40 mb-4 rounded-lg overflow-hidden bg-gray-100">
+        <div className="relative h-48 mb-5 rounded-lg overflow-hidden bg-muted">
           <img
             src={resort.imageUrl}
             alt={resort.name}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
         </div>
       )}
 
       {/* Resort Info */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         {/* Location tag */}
-        <span className="text-xs tracking-[0.2em] uppercase font-light" style={{ color: 'hsl(30 10% 50%)' }}>
+        <span className="text-elegant text-muted-foreground">
           {resort.location}
         </span>
 
         {/* Name */}
-        <h3 className="text-lg font-light transition-colors"
-            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", color: 'hsl(30 15% 25%)' }}>
+        <h3 className="font-serif text-xl font-light text-foreground group-hover:text-primary transition-colors">
           {resort.name}
         </h3>
 
         {/* Description */}
         {resort.description && (
-          <p className="text-sm leading-relaxed line-clamp-2" style={{ color: 'hsl(30 10% 50%)' }}>
+          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
             {resort.description}
           </p>
         )}
 
         {/* Amenities */}
-        <div className="flex flex-wrap gap-1.5 pt-2">
+        <div className="flex flex-wrap gap-2 pt-2">
           {resort.amenities.slice(0, 3).map((amenity, i) => (
             <span
               key={i}
-              className="text-xs px-2 py-0.5 rounded-full"
-              style={{ background: 'hsl(30 30% 94%)', color: 'hsl(30 15% 40%)' }}
+              className="text-xs px-2.5 py-1 rounded-full bg-secondary/50 text-secondary-foreground"
             >
               {amenity}
             </span>
@@ -93,19 +80,17 @@ export const ResortCard: React.FC<ResortCardProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-end justify-between pt-3" style={{ borderTop: '1px solid hsl(30 20% 90%)' }}>
+        <div className="flex items-end justify-between pt-4 border-t border-border/30">
           <div>
-            <span className="text-xs tracking-wider uppercase block mb-0.5" style={{ color: 'hsl(30 10% 60%)' }}>From</span>
-            <span className="text-base" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", color: 'hsl(30 15% 25%)' }}>
-              {resort.pricePerNight}
-            </span>
-            <span className="text-xs" style={{ color: 'hsl(30 10% 60%)' }}> / night</span>
+            <span className="text-elegant text-muted-foreground block mb-1">From</span>
+            <span className="font-serif text-lg text-foreground">{resort.pricePerNight}</span>
+            <span className="text-xs text-muted-foreground"> / night</span>
           </div>
 
           {/* Rating */}
-          <div className="flex items-center gap-1">
-            <Star className="w-3.5 h-3.5" style={{ fill: 'hsl(40 45% 55%)', color: 'hsl(40 45% 55%)' }} />
-            <span className="text-sm font-light" style={{ color: 'hsl(30 15% 35%)' }}>{resort.rating.toFixed(1)}</span>
+          <div className="flex items-center gap-1.5">
+            <span style={{ color: 'hsl(var(--gold))' }}>★</span>
+            <span className="text-sm font-light text-foreground">{resort.rating.toFixed(1)}</span>
           </div>
         </div>
       </div>

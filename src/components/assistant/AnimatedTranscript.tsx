@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { splitTextIntoWords, staggerDelay } from '@/lib/assistant/animations';
 
 interface AnimatedTranscriptProps {
@@ -17,7 +17,6 @@ export const AnimatedTranscript: React.FC<AnimatedTranscriptProps> = ({
   speed = 'medium',
 }) => {
   const [visibleWords, setVisibleWords] = useState<number>(0);
-  const prevTextRef = useRef<string>('');
   const words = splitTextIntoWords(text);
 
   const speedMs = {
@@ -27,47 +26,40 @@ export const AnimatedTranscript: React.FC<AnimatedTranscriptProps> = ({
   };
 
   useEffect(() => {
-    // Reset animation when text changes
-    if (text !== prevTextRef.current) {
+    if (!isActive) {
       setVisibleWords(0);
-      prevTextRef.current = text;
+      return;
     }
 
-    // Animate words appearing
-    if (words.length > 0 && visibleWords < words.length) {
-      const timer = setTimeout(() => {
-        setVisibleWords(prev => prev + 1);
-      }, speedMs[speed]);
-      return () => clearTimeout(timer);
-    }
-  }, [text, visibleWords, words.length, speed]);
+    setVisibleWords(0);
+    const interval = setInterval(() => {
+      setVisibleWords(prev => {
+        if (prev >= words.length) {
+          clearInterval(interval);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, speedMs[speed]);
+
+    return () => clearInterval(interval);
+  }, [text, isActive, words.length, speed]);
 
   if (!text) return null;
 
   return (
-    <div className={`text-center ${className}`}>
-      <p
-        className="text-2xl md:text-3xl leading-relaxed"
-        style={{
-          fontFamily: "'Cormorant Garamond', Georgia, serif",
-          color: 'hsl(30 15% 25%)',
-          fontWeight: 300,
-        }}
-      >
+    <div className={`text-luxury text-center ${className}`}>
+      <p className="text-2xl md:text-3xl leading-relaxed text-foreground/90">
         {words.map((word, index) => (
           <span
             key={`${word}-${index}`}
+            className={`inline-block mx-1 transition-all duration-500 ${
+              index < visibleWords
+                ? 'opacity-100 translate-y-0 blur-0'
+                : 'opacity-0 translate-y-2 blur-sm'
+            }`}
             style={{
-              display: 'inline-block',
-              marginLeft: '0.25rem',
-              marginRight: '0.25rem',
-              transitionProperty: 'opacity, transform, filter',
-              transitionDuration: '500ms',
-              transitionTimingFunction: 'ease-out',
               transitionDelay: `${staggerDelay(index, 30)}ms`,
-              opacity: index < visibleWords ? 1 : 0,
-              transform: index < visibleWords ? 'translateY(0)' : 'translateY(8px)',
-              filter: index < visibleWords ? 'blur(0)' : 'blur(4px)',
             }}
           >
             {word}
