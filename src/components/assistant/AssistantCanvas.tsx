@@ -209,13 +209,27 @@ export function AssistantCanvas() {
           {!showIntro && sessionState === 'connecting' && (
             <motion.div
               key="connecting"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col items-center gap-4"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="flex flex-col items-center gap-6"
             >
-              <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
-              <p className="text-gray-500">Connecting...</p>
+              <div className="relative">
+                <Loader2 className="w-16 h-16 text-teal-500 animate-spin" />
+                <motion.div
+                  className="absolute inset-0 rounded-full bg-teal-500/20"
+                  animate={{
+                    scale: [1, 1.3, 1],
+                    opacity: [0.5, 0, 0.5],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: 'easeOut',
+                  }}
+                />
+              </div>
+              <p className="text-slate-500 font-light text-lg tracking-wide">Connecting...</p>
             </motion.div>
           )}
 
@@ -223,14 +237,14 @@ export function AssistantCanvas() {
           {sessionState === 'error' && (
             <motion.div
               key="error"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center max-w-md"
             >
-              <p className="text-red-500 mb-4">{error || 'Connection failed'}</p>
+              <p className="text-red-500 mb-6 font-light tracking-wide">{error || 'Connection failed'}</p>
               <button
                 onClick={connect}
-                className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+                className="px-8 py-3 bg-gradient-to-br from-teal-500 to-teal-600 text-white rounded-full hover:shadow-xl hover:scale-105 transition-all duration-300 font-medium tracking-wide"
               >
                 Try Again
               </button>
