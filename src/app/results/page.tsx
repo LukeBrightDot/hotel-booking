@@ -2,10 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Star, MapPin, Loader2 } from 'lucide-react';
+import { Star, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import type { HotelSearchResult } from '@/lib/sabre/search';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -20,6 +18,7 @@ function ResultsContent() {
   const [sortBy, setSortBy] = useState('price-asc');
   const [priceRange, setPriceRange] = useState(500);
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const fetchHotels = async () => {
@@ -107,18 +106,28 @@ function ResultsContent() {
     router.push(`/hotels/${hotel.hotelCode}`);
   };
 
+  const currentHotel = filteredHotels[currentIndex];
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % filteredHotels.length);
+  };
+
+  const goToPrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + filteredHotels.length) % filteredHotels.length);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-white">
+      <main className="container mx-auto px-4 py-6">
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Filters Sidebar - Using shadcn/ui components */}
-          <aside className="lg:w-64 flex-shrink-0">
-            <Card className="p-4">
-              <h3 className="font-semibold mb-4">Filters</h3>
+          {/* Filters Sidebar */}
+          <aside className="lg:w-48 flex-shrink-0">
+            <div className="border-b border-gray-200 pb-4 mb-4">
+              <h3 className="font-semibold text-gray-900 mb-4">Filters</h3>
 
               {/* Price Range */}
               <div className="mb-6">
-                <Label className="mb-2 block">Price Range</Label>
+                <Label className="mb-2 block text-sm text-gray-700">Price Range</Label>
                 <Slider
                   value={[priceRange]}
                   onValueChange={(value) => setPriceRange(value[0])}
@@ -126,7 +135,7 @@ function ResultsContent() {
                   step={10}
                   className="mb-2"
                 />
-                <div className="flex justify-between text-sm text-muted-foreground">
+                <div className="flex justify-between text-xs text-gray-500">
                   <span>$0</span>
                   <span>${priceRange}</span>
                 </div>
@@ -134,9 +143,9 @@ function ResultsContent() {
 
               {/* Star Rating */}
               <div className="mb-6">
-                <Label className="mb-2 block">Star Rating</Label>
+                <Label className="mb-2 block text-sm text-gray-700">Star Rating</Label>
                 <div className="space-y-2">
-                  {[5, 4, 3].map((rating) => (
+                  {[5, 4, 3, 2, 1].map((rating) => (
                     <div key={rating} className="flex items-center gap-2">
                       <Checkbox
                         id={`rating-${rating}`}
@@ -153,17 +162,17 @@ function ResultsContent() {
 
               {/* Amenities */}
               <div>
-                <Label className="mb-2 block">Amenities</Label>
+                <Label className="mb-2 block text-sm text-gray-700">Amenities</Label>
                 <div className="space-y-2">
-                  {["Wifi", "Pool", "Spa", "Parking"].map((amenity) => (
+                  {["WiFi", "Pool", "Spa", "Parking"].map((amenity) => (
                     <div key={amenity} className="flex items-center gap-2">
                       <Checkbox id={amenity} />
-                      <label htmlFor={amenity} className="text-sm cursor-pointer">{amenity}</label>
+                      <label htmlFor={amenity} className="text-sm cursor-pointer text-gray-700">{amenity}</label>
                     </div>
                   ))}
                 </div>
               </div>
-            </Card>
+            </div>
           </aside>
 
           {/* Results */}
@@ -182,16 +191,20 @@ function ResultsContent() {
                   Back to Search
                 </button>
               </div>
+            ) : filteredHotels.length === 0 ? (
+              <div className="text-center py-20">
+                <p className="text-gray-500">No hotels found matching your criteria.</p>
+              </div>
             ) : (
               <>
                 {/* Header */}
-                <div className="flex justify-between items-start mb-5">
+                <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">
+                    <h2 className="text-xl font-bold text-gray-900">
                       {filteredHotels.length} hotels found
                     </h2>
                     {latencyMs !== null && (
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 mt-0.5">
                         Sabre API time: {(latencyMs / 1000).toFixed(1)}s
                       </p>
                     )}
@@ -199,99 +212,100 @@ function ResultsContent() {
 
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="px-3 py-1.5 border border-gray-300 rounded bg-white text-xs focus:outline-none focus:ring-1 focus:ring-[#2C5F63]"
+                    onChange={(e) => {
+                      setSortBy(e.target.value);
+                      setCurrentIndex(0);
+                    }}
+                    className="px-3 py-1.5 border border-gray-300 rounded bg-white text-sm focus:outline-none focus:ring-1 focus:ring-[#2C5F63]"
                   >
-                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-asc">Price per night</option>
                     <option value="price-desc">Price: High to Low</option>
                     <option value="rating">Star Rating</option>
                   </select>
                 </div>
 
-                {/* Hotel Cards - Using shadcn/ui components */}
-                <div className="space-y-4">
-                  {filteredHotels.map((hotel) => (
-                    <Card
-                      key={hotel.hotelCode}
-                      className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                      onClick={() => handleViewDetails(hotel)}
+                {/* Hero Image Carousel */}
+                {currentHotel && (
+                  <div
+                    className="relative w-full aspect-[16/9] rounded-lg overflow-hidden cursor-pointer group"
+                    onClick={() => handleViewDetails(currentHotel)}
+                  >
+                    {/* Hotel Image */}
+                    <img
+                      src={currentHotel.thumbnail}
+                      alt={currentHotel.hotelName}
+                      className="w-full h-full object-cover"
+                    />
+
+                    {/* Navigation Arrows */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        goToPrev();
+                      }}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <div className="flex flex-col md:flex-row">
-                        {/* Hotel Image */}
-                        <img
-                          src={hotel.thumbnail}
-                          alt={hotel.hotelName}
-                          className="w-full md:w-64 h-48 object-cover"
-                          loading="lazy"
+                      <ChevronLeft className="w-6 h-6 text-gray-700" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        goToNext();
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <ChevronRight className="w-6 h-6 text-gray-700" />
+                    </button>
+
+                    {/* Navigation Dots */}
+                    <div className="absolute bottom-4 left-4 flex gap-1.5">
+                      {filteredHotels.slice(0, 10).map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentIndex(idx);
+                          }}
+                          className={`w-2 h-2 rounded-full transition-colors ${
+                            idx === currentIndex ? 'bg-white' : 'bg-white/50'
+                          }`}
                         />
+                      ))}
+                      {filteredHotels.length > 10 && (
+                        <span className="text-white text-xs ml-2">+{filteredHotels.length - 10}</span>
+                      )}
+                    </div>
 
-                        {/* Hotel Info */}
-                        <CardContent className="flex-1 p-6">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <h3 className="text-xl font-semibold mb-1">{hotel.hotelName}</h3>
-
-                              {/* Location */}
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                                <MapPin className="h-4 w-4" />
-                                <span>
-                                  {hotel.address.city && hotel.address.state
-                                    ? `${hotel.address.city}, ${hotel.address.state}`
-                                    : hotel.address.city || 'Location unavailable'}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Price */}
-                            <div className="text-right">
-                              <div className="text-2xl font-bold text-primary">
-                                {hotel.lowestRate && hotel.lowestRate > 0
-                                  ? `$${hotel.lowestRate.toFixed(0)}`
-                                  : "Call for Price"}
-                              </div>
-                              <div className="text-sm text-muted-foreground">per night</div>
-                            </div>
+                    {/* Hotel Info Overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6 pt-16">
+                      <h3 className="text-white text-2xl font-semibold mb-1">{currentHotel.hotelName}</h3>
+                      <div className="flex items-center gap-2 text-white/90 text-sm">
+                        {currentHotel.starRating && currentHotel.starRating > 0 && (
+                          <div className="flex items-center gap-0.5">
+                            {Array.from({ length: Math.floor(currentHotel.starRating) }).map((_, i) => (
+                              <Star key={i} className="h-4 w-4 fill-[#D9A021] text-[#D9A021]" />
+                            ))}
                           </div>
-
-                          {/* Star Rating */}
-                          {hotel.starRating && hotel.starRating > 0 && (
-                            <div className="flex items-center gap-0.5 mb-3">
-                              {Array.from({ length: Math.floor(hotel.starRating) }).map((_, i) => (
-                                <Star key={i} className="h-4 w-4 fill-[#D9A021] text-[#D9A021]" />
-                              ))}
-                            </div>
-                          )}
-
-                          {/* Amenities */}
-                          {hotel.amenities && hotel.amenities.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-4">
-                              {hotel.amenities.slice(0, 3).map((amenity, i) => (
-                                <span
-                                  key={i}
-                                  className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded text-sm"
-                                >
-                                  {amenity.description}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* View Details Button */}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewDetails(hotel);
-                            }}
-                          >
-                            View Details
-                          </Button>
-                        </CardContent>
+                        )}
+                        <span>
+                          {currentHotel.address?.city && currentHotel.address?.state
+                            ? `${currentHotel.address.city}, ${currentHotel.address.state}`
+                            : currentHotel.address?.city || ''}
+                        </span>
                       </div>
-                    </Card>
-                  ))}
-                </div>
+                      {currentHotel.lowestRate && currentHotel.lowestRate > 0 && (
+                        <div className="mt-2 text-white text-lg font-semibold">
+                          ${currentHotel.lowestRate.toFixed(0)} <span className="text-sm font-normal text-white/80">per night</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Hotel counter */}
+                <p className="text-center text-sm text-gray-500 mt-4">
+                  Showing {currentIndex + 1} of {filteredHotels.length} hotels
+                </p>
               </>
             )}
           </div>
