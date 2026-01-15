@@ -111,11 +111,54 @@ export function useRealtimeSession(options: UseRealtimeSessionOptions = {}) {
             if (data.name === 'searchHotels' && options.onSearchHotels) {
               setAssistantState('thinking');
               try {
+                console.log('🔧 HOOK: searchHotels tool called with args:', data.arguments);
                 const args = JSON.parse(data.arguments) as SearchHotelsArgs;
+                console.log('🔧 HOOK: Calling onSearchHotels handler...');
                 const results = await options.onSearchHotels(args);
+                console.log('🔧 HOOK: Search completed, got', results.length, 'results');
                 setSearchResults(results);
 
                 // Send function result back
+                if (dataChannelRef.current?.readyState === 'open') {
+                  const hotelSummary = results.length > 0
+                    ? results.slice(0, 8).map((h) => ({
+                        name: h.hotelName,
+                        price: `$${h.lowestRate.toFixed(2)} per night`,
+                        stars: h.starRating,
+                        location: h.address,
+                        distance: h.distance,
+                      }))
+                    : [];
+
+                  const responsePayload = {
+                    type: 'conversation.item.create',
+                    item: {
+                      type: 'function_call_output',
+                      call_id: data.call_id,
+                      output: JSON.stringify({
+                        success: results.length > 0,
+                        count: results.length,
+                        message: results.length > 0
+                          ? `Found ${results.length} hotels available for your dates.`
+                          : 'No hotels found for those dates. Try different dates or a different location.',
+                        hotels: hotelSummary,
+                      }),
+                    },
+                  };
+
+                  console.log('🔧 HOOK: Sending results back to AI:', responsePayload);
+                  dataChannelRef.current.send(JSON.stringify(responsePayload));
+
+                  // Trigger response generation
+                  dataChannelRef.current.send(
+                    JSON.stringify({ type: 'response.create' })
+                  );
+                  console.log('🔧 HOOK: Triggered response.create');
+                }
+              } catch (err) {
+                console.error('❌ HOOK: Error calling searchHotels:', err);
+
+                // Send error back to AI
                 if (dataChannelRef.current?.readyState === 'open') {
                   dataChannelRef.current.send(
                     JSON.stringify({
@@ -124,26 +167,16 @@ export function useRealtimeSession(options: UseRealtimeSessionOptions = {}) {
                         type: 'function_call_output',
                         call_id: data.call_id,
                         output: JSON.stringify({
-                          success: true,
-                          count: results.length,
-                          hotels: results.slice(0, 5).map((h) => ({
-                            name: h.hotelName,
-                            price: `$${h.lowestRate}`,
-                            stars: h.starRating,
-                            location: h.address,
-                          })),
+                          success: false,
+                          error: 'Failed to search hotels. Please try again.',
                         }),
                       },
                     })
                   );
-
-                  // Trigger response generation
                   dataChannelRef.current.send(
                     JSON.stringify({ type: 'response.create' })
                   );
                 }
-              } catch (err) {
-                console.error('Error calling searchHotels:', err);
               }
             } else if (data.name === 'selectHotel' && options.onSelectHotel) {
               const args = JSON.parse(data.arguments) as SelectHotelArgs;
