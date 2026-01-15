@@ -33,11 +33,15 @@ export function AssistantCanvas() {
   const handleSearchHotels = useCallback(
     async (args: SearchHotelsArgs): Promise<HotelSearchResult[]> => {
       try {
+        console.log('🔍 ASSISTANT: Starting hotel search with args:', args);
+
         // First, we need to get location data for the destination
+        console.log('📍 ASSISTANT: Looking up location for:', args.destination);
         const locationRes = await fetch(
-          `/api/locations/autocomplete?query=${encodeURIComponent(args.destination)}`
+          `/api/locations/autocomplete?q=${encodeURIComponent(args.destination)}`
         );
         const locationData = await locationRes.json();
+        console.log('📍 ASSISTANT: Location data received:', locationData);
 
         // Get the first matching location
         const location =
@@ -46,11 +50,15 @@ export function AssistantCanvas() {
           locationData.hotels?.[0];
 
         if (!location) {
-          console.log('No location found for:', args.destination);
+          console.error('❌ ASSISTANT: No location found for:', args.destination);
+          console.log('Available locations:', locationData);
           return [];
         }
 
+        console.log('✅ ASSISTANT: Found location:', location.name, location.code);
+
         // Now search for hotels
+        console.log('🏨 ASSISTANT: Searching hotels (this may take 5-10 seconds)...');
         const searchRes = await fetch('/api/search/hotels', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -59,8 +67,8 @@ export function AssistantCanvas() {
               code: location.code,
               name: location.name,
               type: location.type,
-              latitude: location.latitude,
-              longitude: location.longitude,
+              latitude: location.lat,
+              longitude: location.lng,
             },
             checkIn: args.checkInDate,
             checkOut: args.checkOutDate,
@@ -70,32 +78,38 @@ export function AssistantCanvas() {
         });
 
         const searchData = await searchRes.json();
+        console.log('🏨 ASSISTANT: Search completed. Success:', searchData.success, 'Count:', searchData.count);
 
         if (searchData.success && searchData.results) {
-          return searchData.results.map((hotel: {
+          const mappedResults = searchData.results.map((hotel: {
             hotelCode: string;
             hotelName: string;
-            address?: { line1?: string; city?: string };
-            starRating: number;
-            lowestRate: number;
-            currency: string;
-            distance?: string;
-            amenities?: string[];
+            address?: { addressLine1?: string; city?: string; state?: string };
+            starRating?: number;
+            lowestRate?: number;
+            currencyCode?: string;
+            distance?: number;
+            amenities?: Array<{ code: string; description: string }>;
           }) => ({
             hotelCode: hotel.hotelCode,
             hotelName: hotel.hotelName,
-            address: hotel.address?.line1 || hotel.address?.city || '',
+            address: hotel.address?.addressLine1 || hotel.address?.city || 'Address not available',
             starRating: hotel.starRating || 3,
-            lowestRate: hotel.lowestRate,
-            currency: hotel.currency || 'USD',
-            distance: hotel.distance,
-            amenities: hotel.amenities,
+            lowestRate: hotel.lowestRate || 0,
+            currency: hotel.currencyCode || 'USD',
+            distance: hotel.distance ? `${hotel.distance.toFixed(1)} mi` : undefined,
+            amenities: hotel.amenities?.map(a => a.description),
           }));
+
+          console.log('✅ ASSISTANT: Returning', mappedResults.length, 'hotels to AI');
+          console.log('First 3 hotels:', mappedResults.slice(0, 3));
+          return mappedResults;
         }
 
+        console.log('⚠️ ASSISTANT: Search returned no results or failed');
         return [];
       } catch (error) {
-        console.error('Error searching hotels:', error);
+        console.error('❌ ASSISTANT: Error searching hotels:', error);
         return [];
       }
     },
