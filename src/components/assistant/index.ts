@@ -3,3 +3,8 @@ export { PresenceOrb } from './PresenceOrb';
 export { TranscriptDisplay } from './TranscriptDisplay';
 export { VoiceIndicator } from './VoiceIndicator';
 export { HotelResults } from './HotelResults';
+export { ParticleVisualization } from './ParticleVisualization';
+export { AnimatedTranscript } from './AnimatedTranscript';
+export { FloatingLocations } from './FloatingLocations';
+export { ResortCard } from './ResortCard';
+export type { Resort } from './ResortCard';
