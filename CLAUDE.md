@@ -107,6 +107,21 @@ claude --teleport <session-id>   # Resume specific session
 - RefPointType: `"6"` for codes, `"3"` for coordinates
 - Date format: `YYYY-MM-DDT00:00:00`
 
+### Voice Assistant UI (Complete - 2026-01-15)
+- **Location:** `/assistant` route, powered by OpenAI Realtime API
+- **Design:** iPhone/Siri-inspired premium aesthetic
+- **Features:**
+  - 24-bar waveform animation (state-based: idle, listening, speaking, thinking)
+  - Price range filtering ("around $200", "under $300", etc.)
+  - Glassmorphic controls with gradient buttons
+  - Inter font for clean typography
+  - Subtle gradient background (slate-50 → white → blue-50)
+- **Key Bugs Fixed:**
+  - Tailwind `w-2` compiling to `width: 0px` → Fixed with inline `width: '6px'`
+  - Audio element not in DOM → Added `document.body.appendChild(audioEl)`
+  - AnimatePresence `mode="wait"` causing stuck opacity → Removed prop
+- **Discovery Method:** Browser automation debugging with Chrome DevTools
+
 ### Booking (Discovery Complete - 2026-01-15)
 - ✅ **Payload structure discovered** through systematic testing (15 variations)
 - ✅ **Correct endpoint:** `POST https://api.sabre.com/v2/book/hotels`
@@ -138,6 +153,9 @@ claude --teleport <session-id>   # Resume specific session
 - [x] V5 Hotel Search API
 - [x] Location Autocomplete
 - [x] Search Results UI
+- [x] Voice Assistant (OpenAI Realtime API)
+- [x] Price Range Filtering for Voice Search
+- [x] Premium UI Redesign (iPhone/Siri-style waveform, glassmorphism)
 
 ### Current Focus: Booking API Access (BLOCKED)
 - [x] Spy on bellhopping.com booking process
@@ -172,10 +190,14 @@ curl http://localhost:3000/api/auth/test
 
 ### Key Files
 ```
-src/lib/sabre/auth.ts     # V2 EPR authentication
-src/lib/sabre/search.ts   # V5 hotel search
-src/app/api/search/hotels/route.ts  # Search endpoint
-prisma/schema.prisma      # Booking model ready
+src/lib/sabre/auth.ts                        # V2 EPR authentication
+src/lib/sabre/search.ts                      # V5 hotel search
+src/app/api/search/hotels/route.ts           # Search endpoint
+src/app/assistant/page.tsx                   # Voice assistant page
+src/components/assistant/PresenceOrb.tsx     # iPhone-style waveform (24 bars)
+src/hooks/useRealtimeSession.ts              # OpenAI Realtime API integration
+src/lib/assistant/tools.ts                   # AI function definitions (searchHotels, etc.)
+prisma/schema.prisma                         # Booking model ready
 ```
 
 ---
