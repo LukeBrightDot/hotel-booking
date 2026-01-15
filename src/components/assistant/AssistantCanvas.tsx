@@ -174,20 +174,20 @@ export function AssistantCanvas() {
   }, [sessionState, disconnect]);
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8] flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 flex flex-col">
       {/* Minimal header */}
       <motion.header
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 2, duration: 1 }}
-        className="fixed top-0 left-0 right-0 z-50 p-4"
+        className="fixed top-0 left-0 right-0 z-50 p-6"
       >
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-gray-400 hover:text-gray-600 transition-colors"
+          className="inline-flex items-center gap-2 text-gray-400 hover:text-gray-700 transition-all duration-200 font-medium"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm">Back to search</span>
+          <span className="text-sm tracking-wide">Back to search</span>
         </Link>
       </motion.header>
 
@@ -251,8 +251,9 @@ export function AssistantCanvas() {
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.6, ease: 'easeOut' }}
+                className="mb-4"
               >
-                <PresenceOrb state={assistantState} />
+                <PresenceOrb state={assistantState} className="h-20" />
               </motion.div>
 
               {/* Transcript display */}
