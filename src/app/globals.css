@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -264,6 +265,3 @@ input[type="range"]::-moz-range-thumb:hover {
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
-
-/* Cormorant Garamond font for luxury text */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap');
