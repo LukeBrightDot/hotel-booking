@@ -144,8 +144,15 @@ export const FloatingLocations: React.FC<FloatingLocationsProps> = ({
             }}
           >
             <span
-              className="text-xs tracking-[0.2em] uppercase font-light whitespace-nowrap"
-              style={{ color: 'hsl(15 45% 65%)' }}
+              className="whitespace-nowrap"
+              style={{
+                color: 'hsl(30 10% 50% / 0.7)',
+                fontSize: '0.65rem',
+                fontWeight: 200,
+                letterSpacing: '0.2em',
+                textTransform: 'uppercase',
+                fontFamily: "'Inter', system-ui, sans-serif",
+              }}
             >
               {location.name}
             </span>

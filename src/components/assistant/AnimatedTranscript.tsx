@@ -46,21 +46,28 @@ export const AnimatedTranscript: React.FC<AnimatedTranscriptProps> = ({
 
   return (
     <div className={`text-center ${className}`}>
-      <p className="text-2xl md:text-3xl leading-relaxed font-light tracking-wide"
-         style={{
-           fontFamily: "'Cormorant Garamond', Georgia, serif",
-           color: 'hsl(30 15% 25%)',
-         }}>
+      <p
+        className="text-2xl md:text-3xl leading-relaxed"
+        style={{
+          fontFamily: "'Cormorant Garamond', Georgia, serif",
+          color: 'hsl(30 15% 25%)',
+          fontWeight: 300,
+        }}
+      >
         {words.map((word, index) => (
           <span
             key={`${word}-${index}`}
-            className={`inline-block mx-1 transition-all duration-400 ${
-              index < visibleWords
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-2'
-            }`}
             style={{
-              transitionDelay: `${staggerDelay(index, 20)}ms`,
+              display: 'inline-block',
+              marginLeft: '0.25rem',
+              marginRight: '0.25rem',
+              transitionProperty: 'opacity, transform, filter',
+              transitionDuration: '500ms',
+              transitionTimingFunction: 'ease-out',
+              transitionDelay: `${staggerDelay(index, 30)}ms`,
+              opacity: index < visibleWords ? 1 : 0,
+              transform: index < visibleWords ? 'translateY(0)' : 'translateY(8px)',
+              filter: index < visibleWords ? 'blur(0)' : 'blur(4px)',
             }}
           >
             {word}

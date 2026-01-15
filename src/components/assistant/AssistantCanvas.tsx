@@ -11,7 +11,7 @@ import { VoiceIndicator } from './VoiceIndicator';
 import { useRealtimeSession } from '@/hooks/useRealtimeSession';
 import { SearchHotelsArgs } from '@/lib/assistant/tools';
 import type { VoiceActivityLevel } from '@/lib/assistant/animations';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 
 interface HotelSearchResult {
   hotelCode: string;
@@ -246,17 +246,82 @@ export function AssistantCanvas() {
   const isCompact = displayState === 'results' && showResults;
 
   return (
-    <div className="min-h-screen flex flex-col items-center px-6 pt-16"
+    <div className="min-h-screen flex flex-col items-center px-6 pt-8"
          style={{ background: 'hsl(30 25% 98%)' }}>
+
+      {/* Voice controls at top */}
+      {sessionState === 'connected' && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+          className="flex items-center gap-2 mb-8"
+        >
+          <button
+            onClick={toggleMic}
+            className="relative p-3 rounded-full transition-all duration-300"
+            style={{
+              background: isMuted
+                ? 'hsl(30 15% 92%)'
+                : assistantState === 'listening'
+                ? 'hsl(15 45% 65%)'
+                : 'hsl(35 50% 75%)',
+              color: isMuted ? 'hsl(30 10% 50%)' : 'white',
+              boxShadow: isMuted ? 'none' : '0 2px 8px hsl(15 45% 65% / 0.25)',
+            }}
+            aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
+          >
+            {isMuted ? (
+              <MicOff className="w-4 h-4" />
+            ) : (
+              <Mic className="w-4 h-4" />
+            )}
+            {assistantState === 'listening' && !isMuted && (
+              <motion.div
+                className="absolute inset-0 rounded-full"
+                style={{ border: '2px solid hsl(15 45% 75%)' }}
+                animate={{ scale: [1, 1.4, 1], opacity: [0.8, 0, 0.8] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
+              />
+            )}
+          </button>
+          <button
+            onClick={toggleSpeaker}
+            className="p-3 rounded-full transition-all duration-300"
+            style={{
+              background: isSpeakerOn ? 'hsl(35 50% 75%)' : 'hsl(30 15% 92%)',
+              color: isSpeakerOn ? 'white' : 'hsl(30 10% 50%)',
+              boxShadow: isSpeakerOn ? '0 2px 8px hsl(35 50% 75% / 0.25)' : 'none',
+            }}
+            aria-label={isSpeakerOn ? 'Mute speaker' : 'Unmute speaker'}
+          >
+            {isSpeakerOn ? (
+              <Volume2 className="w-4 h-4" />
+            ) : (
+              <VolumeX className="w-4 h-4" />
+            )}
+          </button>
+        </motion.div>
+      )}
 
       {/* Main visualization area */}
       <div className={`relative flex flex-col items-center w-full max-w-4xl transition-all duration-700 ease-out
                       ${isCompact ? 'flex-none' : 'flex-1 justify-center'}`}>
 
-        {/* Status indicator */}
-        <div className="mb-6 transition-all duration-500">
-          <span className={`text-xs tracking-[0.2em] uppercase font-light transition-opacity duration-300`}
-                style={{ color: 'hsl(30 10% 50%)' }}>
+        {/* Status indicator - positioned above particles with proper spacing */}
+        <div className="mb-8 transition-all duration-500">
+          <span
+            className={`tracking-[0.2em] uppercase transition-opacity duration-300 ${
+              displayState === 'searching' ? 'animate-pulse' : ''
+            }`}
+            style={{
+              color: 'hsl(30 10% 50%)',
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: '0.7rem',
+              fontWeight: 200,
+              letterSpacing: '0.25em',
+            }}
+          >
             {sessionState === 'connecting' && 'Connecting...'}
             {sessionState === 'connected' && displayState === 'idle' && 'Ready'}
             {sessionState === 'connected' && displayState === 'listening' && 'Listening...'}
@@ -366,30 +431,16 @@ export function AssistantCanvas() {
         )}
       </div>
 
-      {/* Voice controls at bottom */}
-      {sessionState === 'connected' && (
-        <motion.footer
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5, duration: 0.5 }}
-          className="fixed bottom-0 left-0 right-0 p-6 flex justify-center"
-          style={{ background: 'linear-gradient(to top, hsl(30 25% 98%), transparent)' }}
-        >
-          <VoiceIndicator
-            isListening={assistantState === 'listening'}
-            isMuted={isMuted}
-            isSpeakerOn={isSpeakerOn}
-            onToggleMic={toggleMic}
-            onToggleSpeaker={toggleSpeaker}
-            showControls={true}
-          />
-        </motion.footer>
-      )}
-
-      {/* Branding */}
+      {/* Subtle branding at bottom */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 pointer-events-none">
-        <span className="text-xs tracking-[0.3em] uppercase font-light"
-              style={{ color: 'hsl(30 10% 70%)' }}>
+        <span
+          className="tracking-[0.3em] uppercase"
+          style={{
+            color: 'hsl(30 10% 70%)',
+            fontSize: '0.65rem',
+            fontWeight: 200,
+          }}
+        >
           Bellhopping AI
         </span>
       </div>

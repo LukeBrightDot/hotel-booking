@@ -13,38 +13,38 @@ export function Header() {
           <span className="text-lg font-light tracking-wide" style={{ color: 'hsl(40 45% 55%)' }}>hopping</span>
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Link
-            href="/assistant"
-            className="px-5 py-2 text-xs font-light tracking-[0.1em] uppercase rounded-full transition-all duration-300"
-            style={{
-              background: 'hsl(15 45% 65%)',
-              color: 'white',
-              boxShadow: '0 2px 8px hsl(15 45% 65% / 0.3)',
-            }}
-          >
-            AI Assistant
-          </Link>
-          <button
-            className="px-5 py-2 text-xs font-light tracking-[0.1em] uppercase rounded-full transition-all duration-300 hover:bg-opacity-80"
+            href="/login"
+            className="px-5 py-2 rounded-full transition-all duration-300 hover:bg-opacity-90"
             style={{
               background: 'transparent',
-              color: 'hsl(30 10% 50%)',
-              border: '1px solid hsl(30 20% 85%)',
+              color: 'hsl(30 10% 45%)',
+              border: '1px solid hsl(30 15% 80%)',
+              fontSize: '0.7rem',
+              fontWeight: 300,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase' as const,
             }}
           >
             Login
-          </button>
-          <button
-            className="px-5 py-2 text-xs font-light tracking-[0.1em] uppercase rounded-full transition-all duration-300"
+          </Link>
+          <Link
+            href="/join"
+            className="px-5 py-2 rounded-full transition-all duration-300 hover:shadow-lg"
             style={{
               background: 'hsl(35 50% 75%)',
               color: 'white',
-              boxShadow: '0 2px 8px hsl(35 50% 75% / 0.3)',
+              border: '1px solid hsl(35 50% 75%)',
+              boxShadow: '0 2px 8px hsl(35 50% 75% / 0.25)',
+              fontSize: '0.7rem',
+              fontWeight: 300,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase' as const,
             }}
           >
             Join
-          </button>
+          </Link>
         </div>
       </div>
     </header>
