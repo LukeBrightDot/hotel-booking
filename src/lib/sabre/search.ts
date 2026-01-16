@@ -151,6 +151,48 @@ function buildSearchPayload(params: HotelSearchParams) {
 }
 
 /**
+ * Extract hero image from Sabre MediaItems
+ *
+ * Sabre V5 CSL returns images in: HotelInfo.MediaItems.MediaItem[]
+ * We want high-quality images that aren't maps
+ */
+function getHeroImage(hotelInfo: any): string {
+  const mediaItems = hotelInfo?.MediaItems?.MediaItem || [];
+
+  if (mediaItems.length === 0) {
+    return 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800'; // Fallback
+  }
+
+  // Priority 1: Find JPG images that aren't maps
+  const heroImage = mediaItems.find((item: any) => {
+    const isJPG = item.Format === 'JPG' || item.Format === 'JPEG';
+    const categoryText = item.Category?.Description?.Text?.toLowerCase() || '';
+    const categoryCode = item.Category?.Text?.toLowerCase() || '';
+    const isNotMap = !categoryText.includes('map') && !categoryCode.includes('map');
+
+    return isJPG && isNotMap;
+  });
+
+  if (heroImage?.Url) {
+    return heroImage.Url;
+  }
+
+  // Priority 2: Just get the first non-map image
+  const anyNonMapImage = mediaItems.find((item: any) => {
+    const categoryText = item.Category?.Description?.Text?.toLowerCase() || '';
+    const categoryCode = item.Category?.Text?.toLowerCase() || '';
+    return !categoryText.includes('map') && !categoryCode.includes('map');
+  });
+
+  if (anyNonMapImage?.Url) {
+    return anyNonMapImage.Url;
+  }
+
+  // Priority 3: Just use the first image
+  return mediaItems[0]?.Url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800';
+}
+
+/**
  * Parse Sabre hotel search response into our format
  */
 function parseHotelResults(sabreResponse: any): HotelSearchResult[] {
@@ -165,17 +207,20 @@ function parseHotelResults(sabreResponse: any): HotelSearchResult[] {
     const locationInfo = hotelInfo.LocationInfo || {};
     const address = locationInfo.Address || {};
     const geoCoords = locationInfo.GeoCoordinates || {};
-    const mediaContent = hotel.MediaContent || {};
-    const images = mediaContent.Images?.Image || [];
+
+    // CRITICAL: Extract images from HotelInfo.MediaItems (Sabre V5 CSL format)
+    // NOT from hotel.MediaContent (old format)
+    const mediaItems = hotelInfo.MediaItems?.MediaItem || [];
 
     // Extract ALL room types and rates (not just cheapest)
     // CRITICAL: Sabre returns pricing in ConvertedRateInfo, NOT RateInfo
     const allRateInfos = hotel.HotelRateInfo?.RateInfos?.ConvertedRateInfo || [];
 
-    // DEBUG: Log rate information for debugging
+    // DEBUG: Log rate and image information for debugging
     console.log(`📊 Hotel: ${hotelInfo.HotelName}`, {
       rateCount: allRateInfos.length,
-      hasImages: images.length > 0,
+      hasMediaItems: mediaItems.length > 0,
+      mediaItemCount: mediaItems.length,
       firstRate: allRateInfos[0]
     });
 
@@ -199,10 +244,13 @@ function parseHotelResults(sabreResponse: any): HotelSearchResult[] {
     const lowestRate = validPrices.length > 0 ? Math.min(...validPrices) : undefined;
     const highestRate = validPrices.length > 0 ? Math.max(...validPrices) : undefined;
 
-    // Extract thumbnail image (with default placeholder if none provided)
-    const thumbnail = images.find((img: any) => img.Type === 'THUMBNAIL')?.Url ||
-                      images[0]?.Url ||
-                      'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400';
+    // Extract hero image using smart filtering (avoids maps, prefers JPG)
+    const heroImage = getHeroImage(hotelInfo);
+
+    // Extract all available images from MediaItems
+    const allImages = mediaItems
+      .filter((item: any) => item.Url && item.Format !== 'Map')
+      .map((item: any) => item.Url);
 
     // Extract amenities
     const amenitiesArray = hotelInfo.Amenities?.Amenity || [];
@@ -234,10 +282,8 @@ function parseHotelResults(sabreResponse: any): HotelSearchResult[] {
       highestRate,
       currencyCode: roomTypes[0]?.currencyCode || 'USD',
       rateCount: roomTypes.length,
-      thumbnail,
-      images: images.length > 0
-        ? images.map((img: any) => img.Url).filter(Boolean)
-        : [thumbnail], // Use thumbnail as fallback if no images array
+      thumbnail: heroImage,
+      images: allImages.length > 0 ? allImages : [heroImage],
       amenities,
       distance: hotel.Distance ? parseFloat(hotel.Distance) : undefined,
       roomTypes, // ALL available room types and rates

@@ -13,13 +13,20 @@
 |----------|----------|--------|---------------|
 | 1 | `AUTHENTICATION_FIXED.md` | **THE TRUTH** | V2 EPR Auth (`V1:USER:PCC:DOMAIN`). V3 is NOT provisioned. |
 | 2 | `SEARCH_IMPLEMENTATION_STATUS.md` | **THE TRUTH** | Search uses **V5 API** (`/v5/get/hotelavail`) |
-| 3 | `BOOKING_PAYLOAD_DISCOVERY_PLAN.md` | **THE TRUTH** | Booking endpoint discovery (2026-01-15). Correct: `/v2/book/hotels` with `CreateBookingRQ`. |
-| 4 | `SABRE_SUPPORT_REQUEST.md` | **ACTIVE** | Support request for booking API access (ERR.2SG.SEC.NOT_AUTHORIZED) |
-| 5 | `SABRE_BOOKING_API_MAPPING.md` | **REFERENCE** | Field mappings for booking payload (structure confirmed) |
-| 6 | `BELLHOPPING_BOOKING_PAYLOAD_CAPTURED.md` | **CAPTURED** | Actual form data from bellhopping.com (2026-01-13) |
-| 7 | `SABRE_AUTH_V3_TEST_RESULTS.md` | **Confirmed** | Documents why V3 fails (not provisioned, not broken) |
-| 8 | `bellhopping.com` (Live Site) | **SPY TARGET** | Reference for UI/UX implementation |
-| 9 | `SABRE_API_REFERENCE.md` | **DEPRECATED** | Field definitions only - NOT for endpoints/auth |
+| 3 | `DEPLOYMENT_GUIDE.md` | **THE TRUTH** | Complete VPS deployment guide with database setup (2026-01-16) |
+| 4 | `DEPLOYMENT_CHECKLIST.md` | **REFERENCE** | Quick reference checklist for deployment |
+| 5 | `LUXURY_OPERATIONS_GUIDE.md` | **THE TRUTH** | Luxury hotel discovery system - operational guide (2026-01-16) |
+| 6 | `LUXURY_AUTO_DISCOVERY.md` | **THE TRUTH** | Luxury hotel auto-discovery technical documentation |
+| 7 | `DATABASE_SETUP.md` | **REFERENCE** | Database setup instructions (local and production) |
+| 8 | `SEARCH_LOGGING_IMPLEMENTATION.md` | **REFERENCE** | Search logging technical details |
+| 9 | `HOTEL_IMAGES_IMPLEMENTATION.md` | **THE TRUTH** | Two-phase hotel images: Live API (done) + DB override (planned) |
+| 10 | `BOOKING_PAYLOAD_DISCOVERY_PLAN.md` | **THE TRUTH** | Booking endpoint discovery (2026-01-15). Correct: `/v2/book/hotels` with `CreateBookingRQ`. |
+| 10 | `SABRE_SUPPORT_REQUEST.md` | **ACTIVE** | Support request for booking API access (ERR.2SG.SEC.NOT_AUTHORIZED) |
+| 11 | `SABRE_BOOKING_API_MAPPING.md` | **REFERENCE** | Field mappings for booking payload (structure confirmed) |
+| 12 | `BELLHOPPING_BOOKING_PAYLOAD_CAPTURED.md` | **CAPTURED** | Actual form data from bellhopping.com (2026-01-13) |
+| 13 | `SABRE_AUTH_V3_TEST_RESULTS.md` | **Confirmed** | Documents why V3 fails (not provisioned, not broken) |
+| 14 | `bellhopping.com` (Live Site) | **SPY TARGET** | Reference for UI/UX implementation |
+| 15 | `SABRE_API_REFERENCE.md` | **DEPRECATED** | Field definitions only - NOT for endpoints/auth |
 
 ---
 
@@ -156,6 +163,26 @@ claude --teleport <session-id>   # Resume specific session
 - [x] Voice Assistant (OpenAI Realtime API)
 - [x] Price Range Filtering for Voice Search
 - [x] Premium UI Redesign (iPhone/Siri-style waveform, glassmorphism)
+- [x] **Luxury Hotel Intelligence System** (2026-01-16)
+  - [x] Two-phase discovery (Hypothesis → Proof via rate probing)
+  - [x] Auto-enrichment of search results with luxury program badges
+  - [x] Re-verification script for stale data detection
+  - [x] UI components (LuxuryBadge, LuxuryBadgeGroup)
+  - [x] Integration with search API and hotel cards
+  - [x] Operational documentation and safety guidelines
+- [x] **Search Result Logging & Analytics** (2026-01-16)
+  - [x] Database logging for all searches (SearchLog, HotelResult models)
+  - [x] Session tracking across searches
+  - [x] Luxury hotel appearance statistics
+  - [x] Analytics dashboard (/analytics)
+  - [x] API endpoint for statistics (/api/analytics/search-stats)
+  - [x] Failed search logging for debugging
+- [x] **Real Hotel Images from Sabre API** (2026-01-16)
+  - [x] Phase 1: Live API images (extract from MediaItems.MediaItem[])
+  - [x] Smart image filtering (avoids maps, prefers JPG)
+  - [x] Next.js Image optimization with domain whitelisting
+  - [x] ResortCard component updated to use Next/Image
+  - [ ] Phase 2: Database override for luxury hotels (planned)
 
 ### Current Focus: Booking API Access (BLOCKED)
 - [x] Spy on bellhopping.com booking process
@@ -190,14 +217,35 @@ curl http://localhost:3000/api/auth/test
 
 ### Key Files
 ```
+# Authentication & Search
 src/lib/sabre/auth.ts                        # V2 EPR authentication
 src/lib/sabre/search.ts                      # V5 hotel search
 src/app/api/search/hotels/route.ts           # Search endpoint
+
+# Voice Assistant
 src/app/assistant/page.tsx                   # Voice assistant page
 src/components/assistant/PresenceOrb.tsx     # iPhone-style waveform (24 bars)
 src/hooks/useRealtimeSession.ts              # OpenAI Realtime API integration
 src/lib/assistant/tools.ts                   # AI function definitions (searchHotels, etc.)
-prisma/schema.prisma                         # Booking model ready
+
+# Luxury Hotel Intelligence System
+src/lib/data/luxury-mapping.ts               # Knowledge base (chain codes, hotel IDs)
+src/lib/services/luxury-probe.ts             # Rate validation service
+src/lib/services/hotel-enricher.ts           # Runtime enrichment layer
+src/components/hotel/LuxuryBadge.tsx         # UI components
+src/components/voice/ResortCard.tsx          # Hotel card with badges
+scripts/discover-luxury-hotels.ts            # Auto-discovery script
+scripts/update-luxury-mappings.ts            # Database update script
+scripts/reverify-luxury-hotels.ts            # Stale data detection
+
+# Search Logging & Analytics
+src/lib/services/search-logger.ts            # Search logging service
+src/app/api/analytics/search-stats/route.ts  # Analytics API endpoint
+src/app/analytics/page.tsx                   # Analytics dashboard UI
+
+# Database
+prisma/schema.prisma                         # All models (SearchLog, HotelResult, Booking, ApiLog)
+src/lib/prisma.ts                            # Prisma client
 ```
 
 ---

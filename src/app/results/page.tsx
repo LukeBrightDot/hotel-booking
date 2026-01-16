@@ -6,12 +6,13 @@ import { Loader2, SlidersHorizontal, X } from 'lucide-react';
 import { Header } from '@/components/booking';
 import { ResortCard, type Resort } from '@/components/voice/ResortCard';
 import type { HotelSearchResult } from '@/lib/sabre/search';
+import type { EnrichedHotelResult } from '@/lib/services/hotel-enricher';
 
 function ResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [hotels, setHotels] = useState<HotelSearchResult[]>([]);
+  const [hotels, setHotels] = useState<EnrichedHotelResult[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState('price-asc');
@@ -76,8 +77,8 @@ function ResultsContent() {
     fetchHotels();
   }, [searchParams]);
 
-  // Convert HotelSearchResult to Resort format
-  const convertToResort = (hotel: HotelSearchResult): Resort => {
+  // Convert EnrichedHotelResult to Resort format
+  const convertToResort = (hotel: EnrichedHotelResult): Resort => {
     const amenities: string[] = [];
 
     // Add some common amenities based on hotel data
@@ -97,6 +98,8 @@ function ResultsContent() {
       rating: hotel.starRating || 0,
       amenities,
       imageUrl: hotel.thumbnail,
+      luxuryPrograms: hotel.luxuryPrograms,
+      isLuxury: hotel.isLuxury,
     };
   };
 
@@ -124,7 +127,7 @@ function ResultsContent() {
     );
   };
 
-  const handleViewDetails = (hotel: HotelSearchResult) => {
+  const handleViewDetails = (hotel: EnrichedHotelResult) => {
     sessionStorage.setItem(`hotel-${hotel.hotelCode}`, JSON.stringify(hotel));
     router.push(`/hotels/${hotel.hotelCode}`);
   };

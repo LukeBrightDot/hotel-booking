@@ -1,6 +1,9 @@
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
+import { LuxuryBadgeGroup } from '@/components/hotel/LuxuryBadge';
+import type { LuxuryProgram } from '@/lib/data/luxury-mapping';
 
 export interface Resort {
   id: string;
@@ -11,6 +14,8 @@ export interface Resort {
   rating: number;
   amenities: string[];
   imageUrl?: string;
+  luxuryPrograms?: LuxuryProgram[];
+  isLuxury?: boolean;
 }
 
 interface ResortCardProps {
@@ -63,10 +68,12 @@ export const ResortCard: React.FC<ResortCardProps> = ({
             background: 'hsl(30 15% 92%)'
           }}
         >
-          <img
+          <Image
             src={resort.imageUrl}
             alt={resort.name}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
           <div
             className="absolute inset-0"
@@ -100,6 +107,18 @@ export const ResortCard: React.FC<ResortCardProps> = ({
         >
           {resort.name}
         </h3>
+
+        {/* Luxury Badges */}
+        {resort.isLuxury && resort.luxuryPrograms && resort.luxuryPrograms.length > 0 && (
+          <div style={{ marginTop: '-0.25rem', marginBottom: '0.25rem' }}>
+            <LuxuryBadgeGroup
+              programs={resort.luxuryPrograms}
+              size="sm"
+              maxVisible={2}
+              animated
+            />
+          </div>
+        )}
 
         <p
           style={{

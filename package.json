@@ -7,7 +7,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "discover-luxury": "tsx scripts/discover-luxury-hotels.ts",
+    "update-luxury-mappings": "tsx scripts/update-luxury-mappings.ts",
+    "reverify-luxury": "tsx scripts/reverify-luxury-hotels.ts"
   },
   "keywords": [],
   "author": "",

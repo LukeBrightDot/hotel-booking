@@ -34,3 +34,5 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+# Luxury verification failure logs
+.luxury-verification-failures.json
