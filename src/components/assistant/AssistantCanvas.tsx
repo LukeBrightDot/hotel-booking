@@ -1,17 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ParticleVisualization } from './ParticleVisualization';
-import { AnimatedTranscript } from './AnimatedTranscript';
-import { FloatingLocations } from './FloatingLocations';
-import { ResortCard, type Resort } from './ResortCard';
-import { VoiceIndicator } from './VoiceIndicator';
+import { VoiceAssistantLayout, type DemoState, type Resort } from '@/components/voice';
 import { useRealtimeSession } from '@/hooks/useRealtimeSession';
 import { SearchHotelsArgs } from '@/lib/assistant/tools';
-import type { VoiceActivityLevel } from '@/lib/assistant/animations';
-import { Loader2, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 
 interface HotelSearchResult {
   hotelCode: string;
@@ -25,17 +18,10 @@ interface HotelSearchResult {
   imageUrl?: string;
 }
 
-type AssistantDisplayState = 'idle' | 'listening' | 'speaking' | 'searching' | 'results';
-
 export function AssistantCanvas() {
   const router = useRouter();
-  const [isReady, setIsReady] = useState(false);
-  const [showIntro, setShowIntro] = useState(true);
-  const [voiceIntensity, setVoiceIntensity] = useState(0);
-  const [displayState, setDisplayState] = useState<AssistantDisplayState>('idle');
-  const [showResults, setShowResults] = useState(false);
-  const [visibleResultCount, setVisibleResultCount] = useState(0);
-  const prevDisplayStateRef = useRef<AssistantDisplayState>('idle');
+  const [displayState, setDisplayState] = useState<DemoState>('idle');
+  const hasConnectedRef = useRef(false);
 
   // Hotel search handler
   const handleSearchHotels = useCallback(
@@ -144,278 +130,80 @@ export function AssistantCanvas() {
     },
   });
 
-  // Voice waveform simulation
-  useEffect(() => {
-    if (assistantState === 'speaking' || assistantState === 'listening') {
-      const interval = setInterval(() => {
-        const baseWave = Math.sin(Date.now() * 0.008) * 0.3;
-        const quickWave = Math.sin(Date.now() * 0.02) * 0.2;
-        const noise = (Math.random() - 0.5) * 0.3;
-        setVoiceIntensity(Math.max(0, Math.min(1, 0.4 + baseWave + quickWave + noise)));
-      }, 50);
-      return () => clearInterval(interval);
-    } else {
-      setVoiceIntensity(prev => prev * 0.9);
-    }
-  }, [assistantState]);
-
   // Update display state based on assistant state
   useEffect(() => {
-    if (searchResults.length > 0 && displayState !== 'searching') {
-      setDisplayState('results');
-    } else if (assistantState === 'speaking') {
-      setDisplayState('speaking');
-    } else if (assistantState === 'listening') {
-      setDisplayState('listening');
-    } else if (displayState !== 'results' && displayState !== 'searching') {
-      setDisplayState('idle');
+    const mapToVoiceState = (): DemoState => {
+      if (searchResults.length > 0 && displayState !== 'searching') {
+        return 'results';
+      }
+      if (displayState === 'searching') return 'searching';
+      if (assistantState === 'speaking') return 'speaking';
+      if (assistantState === 'listening') return 'listening';
+      if (assistantState === 'thinking') return 'searching';
+      return 'idle';
+    };
+
+    const newState = mapToVoiceState();
+    if (newState !== displayState) {
+      setDisplayState(newState);
     }
   }, [assistantState, searchResults.length, displayState]);
 
-  // Handle results animation
-  useEffect(() => {
-    if (displayState === 'results' && searchResults.length > 0) {
-      if (prevDisplayStateRef.current !== 'results') {
-        setShowResults(false);
-        setVisibleResultCount(0);
-        setTimeout(() => {
-          setShowResults(true);
-          searchResults.slice(0, 6).forEach((_, index) => {
-            setTimeout(() => {
-              setVisibleResultCount(prev => prev + 1);
-            }, index * 200);
-          });
-        }, 300);
-      }
-    } else {
-      setShowResults(false);
-      setVisibleResultCount(0);
-    }
-    prevDisplayStateRef.current = displayState;
-  }, [displayState, searchResults]);
-
-  // Get activity level for particle visualization
-  const getActivity = (): VoiceActivityLevel => {
-    switch (displayState) {
-      case 'listening': return 'listening';
-      case 'speaking': return 'speaking';
-      case 'searching': return 'processing';
-      default: return 'idle';
-    }
-  };
-
-  // Get transcript text
-  const getTranscriptText = (): string => {
+  // Get transcript text for display
+  const displayTranscript = useMemo((): string => {
     if (currentTranscript) return currentTranscript;
     const lastAssistantMessage = [...messages].reverse().find(m => m.role === 'assistant');
     return lastAssistantMessage?.content || '';
-  };
+  }, [currentTranscript, messages]);
 
   // Convert search results to Resort format
-  const getResorts = (): Resort[] => {
+  const resorts = useMemo((): Resort[] => {
     return searchResults.slice(0, 6).map(hotel => ({
       id: hotel.hotelCode,
       name: hotel.hotelName,
       location: hotel.address,
-      description: hotel.amenities?.slice(0, 2).join(', '),
+      description: hotel.amenities?.slice(0, 2).join(', ') || 'Luxury accommodations',
       pricePerNight: hotel.lowestRate > 0 ? `$${hotel.lowestRate.toFixed(0)}` : 'Call',
       rating: hotel.starRating,
       amenities: hotel.amenities || [],
       imageUrl: hotel.imageUrl,
     }));
-  };
+  }, [searchResults]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsReady(true), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+  // Handle resort card click
+  const handleResortSelect = useCallback((resort: Resort) => {
+    const hotel = searchResults.find(h => h.hotelCode === resort.id);
+    if (hotel) {
+      handleSelectHotel(hotel);
+    }
+  }, [searchResults, handleSelectHotel]);
 
+  // Auto-connect once on mount
   useEffect(() => {
-    if (isReady && sessionState === 'disconnected') {
-      setShowIntro(false);
+    if (!hasConnectedRef.current && sessionState === 'disconnected') {
+      hasConnectedRef.current = true;
       connect();
     }
-  }, [isReady, sessionState, connect]);
+  }, [sessionState, connect]);
 
+  // Cleanup on unmount only
   useEffect(() => {
     return () => {
-      if (sessionState === 'connected') disconnect();
+      disconnect();
     };
-  }, [sessionState, disconnect]);
-
-  const isCompact = displayState === 'results' && showResults;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center px-6 pt-16">
-      {/* Main visualization area - moves up smoothly when results appear */}
-      <div className={`relative flex flex-col items-center w-full max-w-4xl transition-all duration-700 ease-out
-                      ${isCompact ? 'flex-none' : 'flex-1 justify-center'}`}>
-
-        {/* Voice controls - positioned above status */}
-        {sessionState === 'connected' && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="flex items-center gap-2 mb-6"
-          >
-            <button
-              onClick={toggleMic}
-              className="relative p-3 rounded-full transition-all duration-300"
-              style={{
-                background: isMuted
-                  ? 'hsl(var(--muted))'
-                  : assistantState === 'listening'
-                  ? 'hsl(var(--primary))'
-                  : 'hsl(var(--accent))',
-                color: isMuted ? 'hsl(var(--muted-foreground))' : 'white',
-                boxShadow: isMuted ? 'none' : '0 2px 8px hsl(var(--primary) / 0.25)',
-              }}
-              aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
-            >
-              {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              {assistantState === 'listening' && !isMuted && (
-                <motion.div
-                  className="absolute inset-0 rounded-full border-2"
-                  style={{ borderColor: 'hsl(var(--highlight))' }}
-                  animate={{ scale: [1, 1.4, 1], opacity: [0.8, 0, 0.8] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
-                />
-              )}
-            </button>
-            <button
-              onClick={toggleSpeaker}
-              className="p-3 rounded-full transition-all duration-300"
-              style={{
-                background: isSpeakerOn ? 'hsl(var(--accent))' : 'hsl(var(--muted))',
-                color: isSpeakerOn ? 'white' : 'hsl(var(--muted-foreground))',
-                boxShadow: isSpeakerOn ? '0 2px 8px hsl(var(--accent) / 0.25)' : 'none',
-              }}
-              aria-label={isSpeakerOn ? 'Mute speaker' : 'Unmute speaker'}
-            >
-              {isSpeakerOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-            </button>
-          </motion.div>
-        )}
-
-        {/* Status indicator */}
-        <div className="mb-6 transition-all duration-500">
-          <span className={`text-elegant text-muted-foreground transition-opacity duration-300
-                          ${displayState === 'searching' ? 'animate-pulse' : 'animate-pulse-soft'}`}>
-            {sessionState === 'connecting' && 'Connecting...'}
-            {sessionState === 'connected' && displayState === 'idle' && 'Ready'}
-            {sessionState === 'connected' && displayState === 'listening' && 'Listening...'}
-            {sessionState === 'connected' && displayState === 'speaking' && 'Speaking'}
-            {sessionState === 'connected' && displayState === 'searching' && 'Searching'}
-            {sessionState === 'connected' && displayState === 'results' && 'Found for you'}
-            {sessionState === 'error' && 'Error'}
-          </span>
-        </div>
-
-        <AnimatePresence>
-          {showIntro && (
-            <motion.div
-              key="intro"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="text-center"
-            />
-          )}
-
-          {!showIntro && sessionState === 'connecting' && (
-            <motion.div
-              key="connecting"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="flex flex-col items-center gap-6"
-            >
-              <Loader2 className="w-12 h-12 animate-spin text-primary" />
-            </motion.div>
-          )}
-
-          {sessionState === 'error' && (
-            <motion.div
-              key="error"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center max-w-md"
-            >
-              <p className="text-destructive mb-6 font-light tracking-wide">{error || 'Connection failed'}</p>
-              <button
-                onClick={connect}
-                className="px-8 py-3 text-primary-foreground bg-primary rounded-full hover:shadow-xl transition-all duration-300 font-medium tracking-wide"
-              >
-                Try Again
-              </button>
-            </motion.div>
-          )}
-
-          {sessionState === 'connected' && (
-            <motion.div
-              key="connected"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6 }}
-              className="flex flex-col items-center w-full"
-            >
-              {/* Particle visualization with floating locations */}
-              <div className={`relative transition-all duration-700 ease-out
-                             ${isCompact ? 'scale-75 -mb-8' : 'scale-100'}`}>
-                <ParticleVisualization
-                  activity={getActivity()}
-                  voiceIntensity={voiceIntensity}
-                  size={350}
-                />
-                <FloatingLocations
-                  isActive={displayState === 'searching'}
-                  radius={220}
-                />
-              </div>
-
-              {/* Transcript area */}
-              <div className={`max-w-2xl w-full min-h-[80px] flex items-center justify-center transition-all duration-500
-                             ${isCompact ? 'mt-0 mb-6' : 'mt-8 mb-12'}`}>
-                {getTranscriptText() && (
-                  <AnimatedTranscript
-                    text={getTranscriptText()}
-                    isActive={displayState === 'speaking'}
-                    speed="medium"
-                  />
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Results grid */}
-      <div className={`w-full max-w-5xl px-4 pb-32 transition-all duration-700 ease-out
-                      ${showResults ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 pointer-events-none'}`}>
-        {displayState === 'results' && searchResults.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {getResorts().slice(0, visibleResultCount).map((resort, index) => (
-              <ResortCard
-                key={resort.id}
-                resort={resort}
-                index={index}
-                onClick={() => {
-                  const hotel = searchResults.find(h => h.hotelCode === resort.id);
-                  if (hotel) handleSelectHotel(hotel);
-                }}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Subtle branding at bottom */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 pointer-events-none">
-        <span className="text-elegant text-muted-foreground/40 tracking-[0.3em]">
-          Bellhopping AI
-        </span>
-      </div>
-    </div>
+    <VoiceAssistantLayout
+      state={displayState}
+      transcript={displayTranscript}
+      results={displayState === 'results' ? resorts : []}
+      onMicToggle={toggleMic}
+      onSpeakerToggle={toggleSpeaker}
+      isMicMuted={isMuted}
+      isSpeakerMuted={!isSpeakerOn}
+      onResortSelect={handleResortSelect}
+    />
   );
 }
