@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Mic, MicOff, Volume2, VolumeX, LogIn, UserPlus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import { Header } from '@/components/booking';
 import { ParticleVisualization } from './ParticleVisualization';
 import { AnimatedTranscript } from './AnimatedTranscript';
 import { FloatingLocations } from './FloatingLocations';
@@ -33,6 +35,7 @@ export const VoiceAssistantLayout: React.FC<VoiceAssistantLayoutProps> = ({
   isSpeakerMuted: isSpeakerMutedProp,
   onResortSelect,
 }) => {
+  const router = useRouter();
   const [voiceIntensity, setVoiceIntensity] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const [visibleResultCount, setVisibleResultCount] = useState(0);
@@ -144,77 +147,8 @@ export const VoiceAssistantLayout: React.FC<VoiceAssistantLayoutProps> = ({
         padding: '5rem 1.5rem 0',
       }}
     >
-      {/* Header */}
-      <header
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 50,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '1rem 1.5rem',
-          background: 'hsl(30 25% 98% / 0.8)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <div
-            style={{
-              width: '2rem',
-              height: '2rem',
-              borderRadius: '9999px',
-              background: 'linear-gradient(135deg, hsl(15 55% 70%), hsl(35 45% 75%))',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <span style={{ color: 'hsl(30 25% 98%)', fontWeight: 600, fontSize: '0.875rem' }}>V</span>
-          </div>
-          <span style={{ fontSize: '1.125rem', letterSpacing: '0.05em', color: 'hsl(30 20% 15%)' }}>Voyage</span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.5rem 1rem',
-              fontSize: '0.875rem',
-              color: 'hsl(30 15% 45%)',
-              background: 'transparent',
-              border: 'none',
-              borderRadius: '0.5rem',
-              cursor: 'pointer',
-            }}
-          >
-            <LogIn style={{ width: '1rem', height: '1rem' }} />
-            Login
-          </button>
-          <button
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.5rem 1rem',
-              fontSize: '0.875rem',
-              color: 'hsl(30 25% 98%)',
-              background: 'hsl(15 55% 70%)',
-              border: 'none',
-              borderRadius: '0.5rem',
-              cursor: 'pointer',
-            }}
-          >
-            <UserPlus style={{ width: '1rem', height: '1rem' }} />
-            Join
-          </button>
-        </div>
-      </header>
+      {/* Header with SearchModeToggle */}
+      <Header showModeToggle={true} />
 
       {/* Audio controls */}
       <div style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 50, display: 'flex', gap: '0.75rem' }}>
@@ -270,11 +204,18 @@ export const VoiceAssistantLayout: React.FC<VoiceAssistantLayoutProps> = ({
           width: '100%',
           maxWidth: '56rem',
           transition: 'all 700ms ease-out',
-          flex: isCompact ? 'none' : 1,
-          justifyContent: isCompact ? 'flex-start' : 'center',
+          paddingTop: '2rem',
+          marginBottom: isCompact ? '2rem' : '4rem',
         }}
       >
-        <div style={{ marginBottom: '1.5rem', transition: 'all 500ms' }}>
+        <div style={{
+          marginBottom: '1.5rem',
+          transition: 'all 500ms',
+          height: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
           <span
             style={{
               fontFamily: "'Inter', system-ui, sans-serif",
@@ -297,9 +238,12 @@ export const VoiceAssistantLayout: React.FC<VoiceAssistantLayoutProps> = ({
         <div
           style={{
             position: 'relative',
+            height: '350px',
+            width: '350px',
             transition: 'all 700ms ease-out',
             transform: isCompact ? 'scale(0.75)' : 'scale(1)',
             marginBottom: isCompact ? '-2rem' : 0,
+            zIndex: 1,
           }}
         >
           <ParticleVisualization
@@ -314,28 +258,48 @@ export const VoiceAssistantLayout: React.FC<VoiceAssistantLayoutProps> = ({
           />
         </div>
 
+      </div>
+
+      {/* Floating transcript - appears on top of results when in results mode */}
+      {transcript && (
         <div
           style={{
+            position: isCompact ? 'fixed' : 'relative',
+            top: isCompact ? '140px' : 'auto',
+            left: isCompact ? '50%' : 'auto',
+            transform: isCompact ? 'translateX(-50%)' : 'none',
             maxWidth: '42rem',
             width: '100%',
             minHeight: '80px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'all 500ms',
+            transition: 'all 700ms ease-out',
             marginTop: isCompact ? 0 : '2rem',
-            marginBottom: isCompact ? '1.5rem' : '3rem',
+            marginBottom: isCompact ? 0 : '3rem',
+            zIndex: 10,
+            padding: '0 1rem',
+            pointerEvents: 'none',
           }}
         >
-          {transcript && (
+          <div style={{
+            background: isCompact ? 'hsl(30 25% 98% / 0.95)' : 'transparent',
+            backdropFilter: isCompact ? 'blur(12px)' : 'none',
+            WebkitBackdropFilter: isCompact ? 'blur(12px)' : 'none',
+            padding: isCompact ? '1.5rem 2rem' : '0',
+            borderRadius: isCompact ? '16px' : '0',
+            border: isCompact ? '1px solid hsl(30 15% 88% / 0.5)' : 'none',
+            boxShadow: isCompact ? '0 8px 32px hsl(30 20% 15% / 0.12)' : 'none',
+          }}>
             <AnimatedTranscript
               text={transcript}
-              isActive={state === 'speaking'}
+              isActive={true}
               speed="medium"
+              debounceMs={400}
             />
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Results grid */}
       <div
@@ -379,25 +343,31 @@ export const VoiceAssistantLayout: React.FC<VoiceAssistantLayoutProps> = ({
 
       {/* Branding */}
       <div
+        onClick={() => router.push('/')}
         style={{
           position: 'absolute',
           bottom: '1.5rem',
           left: '50%',
-          transform: 'translateX(-50%)'
+          transform: 'translateX(-50%)',
+          opacity: 0.4,
+          cursor: 'pointer',
+          transition: 'opacity 0.3s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = '0.7';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = '0.4';
         }}
       >
-        <span
+        <img
+          src="https://bellhopping.com/wp-content/uploads/2024/07/Bellhopping-Logo.svg"
+          alt="Bellhopping"
           style={{
-            fontFamily: "'Inter', system-ui, sans-serif",
-            fontWeight: 200,
-            letterSpacing: '0.3em',
-            textTransform: 'uppercase',
-            fontSize: '0.75rem',
-            color: 'hsl(30 15% 45% / 0.4)',
+            height: '1.5rem',
+            width: 'auto',
           }}
-        >
-          Voyage AI
-        </span>
+        />
       </div>
     </div>
   );

@@ -45,6 +45,8 @@ export function useRealtimeSession(options: UseRealtimeSessionOptions = {}) {
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isIntentionalDisconnect = useRef(false);
 
   // Add a message to the conversation
   const addMessage = useCallback((role: 'assistant' | 'user', content: string) => {
@@ -212,6 +214,7 @@ export function useRealtimeSession(options: UseRealtimeSessionOptions = {}) {
   // Initialize the WebRTC connection
   const connect = useCallback(async () => {
     try {
+      isIntentionalDisconnect.current = false;
       setSessionState('connecting');
       setError(null);
 
@@ -240,6 +243,26 @@ export function useRealtimeSession(options: UseRealtimeSessionOptions = {}) {
         audioEl.srcObject = event.streams[0];
       };
 
+      // Monitor connection state
+      pc.onconnectionstatechange = () => {
+        console.log('Connection state:', pc.connectionState);
+        if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
+          if (!isIntentionalDisconnect.current) {
+            console.log('Connection lost - will attempt reconnection');
+            setSessionState('disconnected');
+          }
+        }
+      };
+
+      pc.oniceconnectionstatechange = () => {
+        console.log('ICE connection state:', pc.iceConnectionState);
+        if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+          if (!isIntentionalDisconnect.current) {
+            setError('Connection lost. Reconnecting...');
+          }
+        }
+      };
+
       // Get user microphone
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaStreamRef.current = stream;
@@ -256,6 +279,24 @@ export function useRealtimeSession(options: UseRealtimeSessionOptions = {}) {
       };
 
       dc.onmessage = handleDataChannelMessage;
+
+      dc.onerror = (error) => {
+        console.error('Data channel error:', error);
+        setError('Connection error occurred');
+      };
+
+      dc.onclose = () => {
+        console.log('Data channel closed');
+        if (!isIntentionalDisconnect.current) {
+          console.log('Unexpected disconnect - attempting to reconnect...');
+          setSessionState('disconnected');
+          // Attempt to reconnect after 2 seconds
+          reconnectTimeoutRef.current = setTimeout(() => {
+            console.log('Reconnecting...');
+            connect();
+          }, 2000);
+        }
+      };
 
       dc.onerror = (err) => {
         console.error('Data channel error:', err);
@@ -314,6 +355,14 @@ export function useRealtimeSession(options: UseRealtimeSessionOptions = {}) {
 
   // Disconnect
   const disconnect = useCallback(() => {
+    isIntentionalDisconnect.current = true;
+
+    // Clear any pending reconnection
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach((track) => track.stop());
     }
@@ -322,7 +371,9 @@ export function useRealtimeSession(options: UseRealtimeSessionOptions = {}) {
     }
     if (audioElementRef.current) {
       audioElementRef.current.srcObject = null;
-      document.body.removeChild(audioElementRef.current);
+      if (document.body.contains(audioElementRef.current)) {
+        document.body.removeChild(audioElementRef.current);
+      }
     }
 
     peerConnectionRef.current = null;
@@ -335,6 +386,11 @@ export function useRealtimeSession(options: UseRealtimeSessionOptions = {}) {
     setMessages([]);
     setCurrentTranscript('');
     setSearchResults([]);
+
+    // Reset flag after cleanup
+    setTimeout(() => {
+      isIntentionalDisconnect.current = false;
+    }, 100);
   }, []);
 
   // Toggle microphone

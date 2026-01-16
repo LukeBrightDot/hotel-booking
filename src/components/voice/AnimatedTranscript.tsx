@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { splitTextIntoWords, staggerDelay } from '@/lib/animations';
 
 interface AnimatedTranscriptProps {
@@ -8,6 +8,7 @@ interface AnimatedTranscriptProps {
   isActive?: boolean;
   className?: string;
   speed?: 'slow' | 'medium' | 'fast';
+  debounceMs?: number;
 }
 
 export const AnimatedTranscript: React.FC<AnimatedTranscriptProps> = ({
@@ -15,9 +16,13 @@ export const AnimatedTranscript: React.FC<AnimatedTranscriptProps> = ({
   isActive = true,
   className = '',
   speed = 'medium',
+  debounceMs = 300,
 }) => {
   const [visibleWords, setVisibleWords] = useState<number>(0);
-  const words = splitTextIntoWords(text);
+  const [debouncedText, setDebouncedText] = useState<string>('');
+  const previousTextRef = useRef<string>('');
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const words = splitTextIntoWords(debouncedText);
 
   const speedMs = {
     slow: 150,
@@ -25,13 +30,44 @@ export const AnimatedTranscript: React.FC<AnimatedTranscriptProps> = ({
     fast: 40,
   };
 
+  // Debounce the incoming text to prevent showing partial transcriptions
+  useEffect(() => {
+    // Clear previous timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Only debounce if text is actually changing (streaming)
+    // If text is empty, update immediately
+    if (!text) {
+      setDebouncedText('');
+      return;
+    }
+
+    // Set new timer
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedText(text);
+    }, debounceMs);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [text, debounceMs]);
+
   useEffect(() => {
     if (!isActive) {
       setVisibleWords(0);
       return;
     }
 
-    setVisibleWords(0);
+    // Only reset if text actually changed
+    if (debouncedText !== previousTextRef.current) {
+      previousTextRef.current = debouncedText;
+      setVisibleWords(0);
+    }
+
     const interval = setInterval(() => {
       setVisibleWords(prev => {
         if (prev >= words.length) {
@@ -43,7 +79,7 @@ export const AnimatedTranscript: React.FC<AnimatedTranscriptProps> = ({
     }, speedMs[speed]);
 
     return () => clearInterval(interval);
-  }, [text, isActive, words.length, speed]);
+  }, [debouncedText, isActive, words.length, speed]);
 
   return (
     <div

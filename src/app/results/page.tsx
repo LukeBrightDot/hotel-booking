@@ -2,11 +2,10 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Star, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Loader2, SlidersHorizontal, X } from 'lucide-react';
+import { Header } from '@/components/booking';
+import { ResortCard, type Resort } from '@/components/voice/ResortCard';
 import type { HotelSearchResult } from '@/lib/sabre/search';
-import { Slider } from '@/components/ui/slider';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 
 function ResultsContent() {
   const searchParams = useSearchParams();
@@ -18,7 +17,7 @@ function ResultsContent() {
   const [sortBy, setSortBy] = useState('price-asc');
   const [priceRange, setPriceRange] = useState(500);
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     const fetchHotels = async () => {
@@ -77,6 +76,30 @@ function ResultsContent() {
     fetchHotels();
   }, [searchParams]);
 
+  // Convert HotelSearchResult to Resort format
+  const convertToResort = (hotel: HotelSearchResult): Resort => {
+    const amenities: string[] = [];
+
+    // Add some common amenities based on hotel data
+    if (hotel.starRating && hotel.starRating >= 4) amenities.push('Luxury');
+    amenities.push('WiFi', 'Room Service');
+
+    return {
+      id: hotel.hotelCode,
+      name: hotel.hotelName,
+      location: hotel.address?.city
+        ? `${hotel.address.city}${hotel.address.state ? ', ' + hotel.address.state : ''}`
+        : hotel.address?.countryName || 'Location',
+      description: hotel.description || `Experience luxury at ${hotel.hotelName}`,
+      pricePerNight: hotel.lowestRate && hotel.lowestRate > 0
+        ? `$${Math.round(hotel.lowestRate)}`
+        : 'Contact for pricing',
+      rating: hotel.starRating || 0,
+      amenities,
+      imageUrl: hotel.thumbnail,
+    };
+  };
+
   const filteredHotels = hotels
     .filter((hotel) => {
       const price = hotel.lowestRate || 0;
@@ -106,210 +129,276 @@ function ResultsContent() {
     router.push(`/hotels/${hotel.hotelCode}`);
   };
 
-  const currentHotel = filteredHotels[currentIndex];
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % filteredHotels.length);
-  };
-
-  const goToPrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + filteredHotels.length) % filteredHotels.length);
-  };
-
   return (
-    <div className="min-h-screen" style={{ background: 'hsl(30 25% 98%)' }}>
-      <main className="container mx-auto px-4 py-6">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Filters Sidebar */}
-          <aside className="lg:w-48 flex-shrink-0">
-            <div className="pb-4 mb-4" style={{ borderBottom: '1px solid hsl(30 20% 85%)' }}>
-              <h3 className="text-xs font-light tracking-[0.15em] uppercase mb-4" style={{ color: 'hsl(30 15% 25%)' }}>Filters</h3>
+    <div style={{ minHeight: '100vh', background: 'hsl(30 25% 98%)' }}>
+      <Header showModeToggle={true} />
 
-              {/* Price Range */}
-              <div className="mb-6">
-                <Label className="mb-2 block text-xs font-light tracking-[0.1em] uppercase" style={{ color: 'hsl(30 10% 50%)' }}>Price Range</Label>
-                <Slider
-                  value={[priceRange]}
-                  onValueChange={(value) => setPriceRange(value[0])}
-                  max={500}
-                  step={10}
-                  className="mb-2"
-                />
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>$0</span>
-                  <span>${priceRange}</span>
-                </div>
-              </div>
-
-              {/* Star Rating */}
-              <div className="mb-6">
-                <Label className="mb-2 block text-xs font-light tracking-[0.1em] uppercase" style={{ color: 'hsl(30 10% 50%)' }}>Star Rating</Label>
-                <div className="space-y-2">
-                  {[5, 4, 3, 2, 1].map((rating) => (
-                    <div key={rating} className="flex items-center gap-2">
-                      <Checkbox
-                        id={`rating-${rating}`}
-                        checked={selectedRatings.includes(rating)}
-                        onCheckedChange={() => toggleRating(rating)}
-                      />
-                      <label htmlFor={`rating-${rating}`} className="flex items-center gap-1 text-sm cursor-pointer">
-                        {rating} <Star className="h-3 w-3 fill-[#D9A021] text-[#D9A021]" />
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Amenities */}
-              <div>
-                <Label className="mb-2 block text-xs font-light tracking-[0.1em] uppercase" style={{ color: 'hsl(30 10% 50%)' }}>Amenities</Label>
-                <div className="space-y-2">
-                  {["WiFi", "Pool", "Spa", "Parking"].map((amenity) => (
-                    <div key={amenity} className="flex items-center gap-2">
-                      <Checkbox id={amenity} />
-                      <label htmlFor={amenity} className="text-sm cursor-pointer text-gray-700">{amenity}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          {/* Results */}
-          <div className="flex-1">
-            {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin" style={{ color: 'hsl(15 45% 65%)' }} />
-              </div>
-            ) : error ? (
-              <div className="rounded-lg p-6 text-center" style={{ background: 'hsl(15 70% 95%)', border: '1px solid hsl(15 60% 85%)' }}>
-                <p className="mb-4" style={{ color: 'hsl(15 50% 40%)' }}>{error}</p>
-                <button
-                  onClick={() => router.push('/')}
-                  className="px-6 py-2 text-white rounded-full text-sm font-light tracking-[0.1em] uppercase transition-all duration-300"
-                  style={{ background: 'hsl(15 45% 65%)', boxShadow: '0 2px 8px hsl(15 45% 65% / 0.3)' }}
-                >
-                  Back to Search
-                </button>
-              </div>
-            ) : filteredHotels.length === 0 ? (
-              <div className="text-center py-20">
-                <p style={{ color: 'hsl(30 10% 50%)' }}>No hotels found matching your criteria.</p>
-              </div>
-            ) : (
-              <>
-                {/* Header */}
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h2 className="text-lg font-light tracking-wide" style={{ color: 'hsl(30 15% 25%)', fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
-                      {filteredHotels.length} hotels found
-                    </h2>
-                    {latencyMs !== null && (
-                      <p className="text-xs mt-0.5" style={{ color: 'hsl(30 10% 50%)' }}>
-                        Sabre API time: {(latencyMs / 1000).toFixed(1)}s
-                      </p>
-                    )}
-                  </div>
-
-                  <select
-                    value={sortBy}
-                    onChange={(e) => {
-                      setSortBy(e.target.value);
-                      setCurrentIndex(0);
-                    }}
-                    className="px-4 py-2 rounded-lg bg-white text-sm focus:outline-none transition-all duration-300"
-                    style={{ border: '1px solid hsl(30 20% 85%)', color: 'hsl(30 15% 25%)' }}
-                  >
-                    <option value="price-asc">Price per night</option>
-                    <option value="price-desc">Price: High to Low</option>
-                    <option value="rating">Star Rating</option>
-                  </select>
-                </div>
-
-                {/* Hero Image Carousel */}
-                {currentHotel && (
-                  <div
-                    className="relative w-full aspect-[16/9] rounded-lg overflow-hidden cursor-pointer group"
-                    onClick={() => handleViewDetails(currentHotel)}
-                  >
-                    {/* Hotel Image */}
-                    <img
-                      src={currentHotel.thumbnail}
-                      alt={currentHotel.hotelName}
-                      className="w-full h-full object-cover"
-                    />
-
-                    {/* Navigation Arrows */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        goToPrev();
-                      }}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <ChevronLeft className="w-6 h-6 text-gray-700" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        goToNext();
-                      }}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <ChevronRight className="w-6 h-6 text-gray-700" />
-                    </button>
-
-                    {/* Navigation Dots */}
-                    <div className="absolute bottom-4 left-4 flex gap-1.5">
-                      {filteredHotels.slice(0, 10).map((_, idx) => (
-                        <button
-                          key={idx}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCurrentIndex(idx);
-                          }}
-                          className={`w-2 h-2 rounded-full transition-colors ${
-                            idx === currentIndex ? 'bg-white' : 'bg-white/50'
-                          }`}
-                        />
-                      ))}
-                      {filteredHotels.length > 10 && (
-                        <span className="text-white text-xs ml-2">+{filteredHotels.length - 10}</span>
-                      )}
-                    </div>
-
-                    {/* Hotel Info Overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6 pt-16">
-                      <h3 className="text-white text-2xl font-semibold mb-1">{currentHotel.hotelName}</h3>
-                      <div className="flex items-center gap-2 text-white/90 text-sm">
-                        {currentHotel.starRating && currentHotel.starRating > 0 && (
-                          <div className="flex items-center gap-0.5">
-                            {Array.from({ length: Math.floor(currentHotel.starRating) }).map((_, i) => (
-                              <Star key={i} className="h-4 w-4 fill-[#D9A021] text-[#D9A021]" />
-                            ))}
-                          </div>
-                        )}
-                        <span>
-                          {currentHotel.address?.city && currentHotel.address?.state
-                            ? `${currentHotel.address.city}, ${currentHotel.address.state}`
-                            : currentHotel.address?.city || ''}
-                        </span>
-                      </div>
-                      {currentHotel.lowestRate && currentHotel.lowestRate > 0 && (
-                        <div className="mt-2 text-white text-lg font-semibold">
-                          ${currentHotel.lowestRate.toFixed(0)} <span className="text-sm font-normal text-white/80">per night</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Hotel counter */}
-                <p className="text-center text-xs tracking-[0.1em] uppercase mt-4" style={{ color: 'hsl(30 10% 50%)' }}>
-                  Showing {currentIndex + 1} of {filteredHotels.length} hotels
+      <main style={{ paddingTop: '80px', paddingBottom: '40px' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 24px' }}>
+          {/* Header Section */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '32px',
+            flexWrap: 'wrap',
+            gap: '16px',
+          }}>
+            <div>
+              <h1 style={{
+                fontFamily: '"Cormorant Garamond", Georgia, serif',
+                fontSize: '32px',
+                fontWeight: 300,
+                letterSpacing: '0.02em',
+                color: 'hsl(30 20% 15%)',
+                marginBottom: '8px',
+              }}>
+                {loading ? 'Searching...' : `${filteredHotels.length} Hotels Found`}
+              </h1>
+              {latencyMs !== null && (
+                <p style={{
+                  fontFamily: '"Inter", system-ui, sans-serif',
+                  fontSize: '13px',
+                  color: 'hsl(30 15% 55%)',
+                }}>
+                  Found in {(latencyMs / 1000).toFixed(1)}s
                 </p>
-              </>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              {/* Sort Dropdown */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                style={{
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  background: 'hsl(30 20% 96%)',
+                  border: '1px solid hsl(30 15% 88%)',
+                  fontFamily: '"Inter", system-ui, sans-serif',
+                  fontSize: '14px',
+                  color: 'hsl(30 20% 15%)',
+                  cursor: 'pointer',
+                  outline: 'none',
+                }}
+              >
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="rating">Star Rating</option>
+              </select>
+
+              {/* Filter Toggle Button (Mobile) */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  background: showFilters ? 'hsl(15 55% 70%)' : 'hsl(30 20% 96%)',
+                  border: '1px solid hsl(30 15% 88%)',
+                  fontFamily: '"Inter", system-ui, sans-serif',
+                  fontSize: '14px',
+                  color: showFilters ? 'white' : 'hsl(30 20% 15%)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                {showFilters ? <X style={{ width: '16px', height: '16px' }} /> : <SlidersHorizontal style={{ width: '16px', height: '16px' }} />}
+                Filters
+              </button>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+            {/* Filters Sidebar */}
+            {showFilters && (
+              <aside style={{
+                width: '280px',
+                flexShrink: 0,
+                background: 'hsl(30 25% 98%)',
+                border: '1px solid hsl(30 15% 90%)',
+                borderRadius: '16px',
+                padding: '24px',
+                boxShadow: '0 4px 16px hsl(30 20% 15% / 0.08)',
+              }}>
+                <h3 style={{
+                  fontFamily: '"Inter", system-ui, sans-serif',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  color: 'hsl(30 15% 45%)',
+                  marginBottom: '24px',
+                }}>
+                  Filters
+                </h3>
+
+                {/* Price Range */}
+                <div style={{ marginBottom: '32px' }}>
+                  <label style={{
+                    fontFamily: '"Inter", system-ui, sans-serif',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: 'hsl(30 15% 55%)',
+                    display: 'block',
+                    marginBottom: '12px',
+                  }}>
+                    Max Price per Night
+                  </label>
+                  <input
+                    type="range"
+                    value={priceRange}
+                    onChange={(e) => setPriceRange(parseInt(e.target.value))}
+                    min="0"
+                    max="500"
+                    step="10"
+                    style={{ width: '100%', marginBottom: '8px' }}
+                  />
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontFamily: '"Inter", system-ui, sans-serif',
+                    fontSize: '13px',
+                    color: 'hsl(30 15% 55%)',
+                  }}>
+                    <span>$0</span>
+                    <span style={{ fontWeight: 500, color: 'hsl(15 55% 70%)' }}>${priceRange}</span>
+                  </div>
+                </div>
+
+                {/* Star Rating */}
+                <div>
+                  <label style={{
+                    fontFamily: '"Inter", system-ui, sans-serif',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: 'hsl(30 15% 55%)',
+                    display: 'block',
+                    marginBottom: '12px',
+                  }}>
+                    Star Rating
+                  </label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {[5, 4, 3, 2, 1].map((rating) => (
+                      <label
+                        key={rating}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedRatings.includes(rating)}
+                          onChange={() => toggleRating(rating)}
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            cursor: 'pointer',
+                            accentColor: 'hsl(15 55% 70%)',
+                          }}
+                        />
+                        <span style={{
+                          fontFamily: '"Inter", system-ui, sans-serif',
+                          fontSize: '14px',
+                          color: 'hsl(30 20% 25%)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                        }}>
+                          {rating} <span style={{ color: 'hsl(42 65% 50%)' }}>★</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </aside>
             )}
+
+            {/* Results Grid */}
+            <div style={{ flex: 1 }}>
+              {loading ? (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '80px 0',
+                }}>
+                  <Loader2 style={{ width: '32px', height: '32px', color: 'hsl(15 55% 70%)' }} className="animate-spin" />
+                </div>
+              ) : error ? (
+                <div style={{
+                  borderRadius: '16px',
+                  padding: '48px 24px',
+                  textAlign: 'center',
+                  background: 'hsl(15 70% 95%)',
+                  border: '1px solid hsl(15 60% 85%)',
+                }}>
+                  <p style={{
+                    fontFamily: '"Inter", system-ui, sans-serif',
+                    fontSize: '15px',
+                    color: 'hsl(15 50% 40%)',
+                    marginBottom: '24px',
+                  }}>
+                    {error}
+                  </p>
+                  <button
+                    onClick={() => router.push('/')}
+                    style={{
+                      padding: '12px 32px',
+                      borderRadius: '12px',
+                      background: 'linear-gradient(135deg, hsl(15 55% 70%) 0%, hsl(25 50% 65%) 100%)',
+                      border: 'none',
+                      fontFamily: '"Inter", system-ui, sans-serif',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      color: 'white',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 4px 16px hsl(15 55% 70% / 0.3)',
+                    }}
+                  >
+                    Back to Search
+                  </button>
+                </div>
+              ) : filteredHotels.length === 0 ? (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '80px 0',
+                  fontFamily: '"Inter", system-ui, sans-serif',
+                  fontSize: '15px',
+                  color: 'hsl(30 15% 55%)',
+                }}>
+                  No hotels found matching your criteria.
+                </div>
+              ) : (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                  gap: '24px',
+                }}>
+                  {filteredHotels.map((hotel, index) => (
+                    <ResortCard
+                      key={hotel.hotelCode}
+                      resort={convertToResort(hotel)}
+                      index={index}
+                      onClick={() => handleViewDetails(hotel)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>
@@ -320,8 +409,14 @@ function ResultsContent() {
 export default function ResultsPage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen" style={{ background: 'hsl(30 25% 98%)' }}>
-        <Loader2 className="h-8 w-8 animate-spin" style={{ color: 'hsl(15 45% 65%)' }} />
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        background: 'hsl(30 25% 98%)',
+      }}>
+        <Loader2 style={{ width: '32px', height: '32px', color: 'hsl(15 55% 70%)' }} className="animate-spin" />
       </div>
     }>
       <ResultsContent />
