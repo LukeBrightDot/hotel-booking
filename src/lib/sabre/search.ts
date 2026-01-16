@@ -124,7 +124,7 @@ function buildSearchPayload(params: HotelSearchParams) {
 
   // GOLDEN PAYLOAD - based on official Sabre v4.1.0 YAML spec
   // BestOnly: '1' returns cheapest rate only (standard behavior)
-  // NOTE: To get all room types, we may need a different API endpoint or multiple requests
+  // NOTE: Sabre V5 search endpoint may not return MediaItems - images may require separate Content API
   return {
     GetHotelAvailRQ: {
       version: '5.1.0',
