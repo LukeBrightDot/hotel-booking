@@ -17,7 +17,7 @@
  */
 
 import { addDays, format } from 'date-fns';
-import { getSabreToken } from '../sabre/auth';
+import { getAuthToken } from '../sabre/auth';
 
 export interface ProbeResult {
   isConfirmed: boolean;
@@ -121,7 +121,7 @@ export async function probeLuxuryRate(
 
   try {
     // Step 3: Get Sabre authentication token
-    const token = await getSabreToken();
+    const token = await getAuthToken();
 
     // Step 4: Build Sabre Hotel Availability Request
     const payload = {
