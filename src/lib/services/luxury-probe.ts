@@ -19,7 +19,7 @@
 import { addDays, format } from 'date-fns';
 import { getSabreToken } from '../sabre/auth';
 
-interface ProbeResult {
+export interface ProbeResult {
   isConfirmed: boolean;
   rateCodeFound: string | null;
   rateAmount?: number;
