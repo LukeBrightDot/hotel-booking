@@ -50,11 +50,16 @@ export function AssistantCanvas() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             location: {
+              id: location.id,
               code: location.code,
               name: location.name,
               type: location.type,
-              latitude: location.lat,
-              longitude: location.lng,
+              city: location.city,
+              state: location.state,
+              country: location.country,
+              countryCode: location.countryCode,
+              lat: location.lat,
+              lng: location.lng,
             },
             checkIn: args.checkInDate,
             checkOut: args.checkOutDate,

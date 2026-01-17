@@ -107,8 +107,8 @@ export async function logSearch(params: SearchLogParams): Promise<string | null>
               postalCode: hotel.address?.postalCode || '',
               country: hotel.address?.country || location.country || '',
             },
-            city: hotel.address?.city || location.city || '',
-            country: hotel.address?.country || location.country || '',
+            city: String(hotel.address?.city || location.city || ''),
+            country: String(hotel.address?.country || location.country || ''),
             coordinates: hotel.coordinates
               ? {
                   lat: hotel.coordinates.lat,
