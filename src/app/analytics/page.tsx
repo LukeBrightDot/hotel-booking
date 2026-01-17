@@ -197,7 +197,7 @@ interface StatCardProps {
   label: string;
   value: string | number;
   icon: string;
-  color?: 'blue' | 'green' | 'red' | 'purple';
+  color?: 'blue' | 'green' | 'red' | 'purple' | 'gray';
 }
 
 function StatCard({ label, value, icon, color = 'gray' }: StatCardProps) {
