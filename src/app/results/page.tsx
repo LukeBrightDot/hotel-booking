@@ -16,7 +16,7 @@ function ResultsContent() {
   const [error, setError] = useState<string | null>(null);
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState('price-asc');
-  const [priceRange, setPriceRange] = useState(500);
+  const [priceRange, setPriceRange] = useState(Infinity);
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -103,10 +103,20 @@ function ResultsContent() {
     };
   };
 
+  // Calculate the maximum price from all hotels
+  const maxHotelPrice = hotels.reduce((max, hotel) => {
+    const price = hotel.lowestRate || 0;
+    return price > max ? price : max;
+  }, 0);
+
+  // Round up to nearest 100 for cleaner slider values
+  const dynamicMaxPrice = Math.max(1000, Math.ceil(maxHotelPrice / 100) * 100);
+
   const filteredHotels = hotels
     .filter((hotel) => {
       const price = hotel.lowestRate || 0;
-      if (price > priceRange) return false;
+      // Only apply price filter if user has set a specific limit
+      if (priceRange !== Infinity && price > priceRange) return false;
       if (selectedRatings.length > 0 && hotel.starRating) {
         if (!selectedRatings.includes(Math.floor(hotel.starRating))) return false;
       }
@@ -255,10 +265,10 @@ function ResultsContent() {
                   </label>
                   <input
                     type="range"
-                    value={priceRange}
+                    value={priceRange === Infinity ? dynamicMaxPrice : priceRange}
                     onChange={(e) => setPriceRange(parseInt(e.target.value))}
                     min="0"
-                    max="500"
+                    max={dynamicMaxPrice}
                     step="10"
                     style={{ width: '100%', marginBottom: '8px' }}
                   />
@@ -270,7 +280,9 @@ function ResultsContent() {
                     color: 'hsl(30 15% 55%)',
                   }}>
                     <span>$0</span>
-                    <span style={{ fontWeight: 500, color: 'hsl(15 55% 70%)' }}>${priceRange}</span>
+                    <span style={{ fontWeight: 500, color: 'hsl(15 55% 70%)' }}>
+                      {priceRange === Infinity ? 'No limit' : `$${priceRange}`}
+                    </span>
                   </div>
                 </div>
 
