@@ -91,7 +91,7 @@ export function LuxuryBadge({
       scale: 1,
       opacity: 1,
       transition: {
-        type: 'spring',
+        type: 'spring' as const,
         stiffness: 500,
         damping: 30,
       },
@@ -99,7 +99,7 @@ export function LuxuryBadge({
     hover: {
       scale: 1.05,
       transition: {
-        type: 'spring',
+        type: 'spring' as const,
         stiffness: 400,
         damping: 10,
       },
