@@ -28,7 +28,7 @@ interface ProbeResult {
   error?: string;
 }
 
-interface ProbeConfig {
+export interface ProbeConfig {
   hotelId: string;
   chainCode: string;
   daysInFuture?: number; // How far out to test (default: 45)
