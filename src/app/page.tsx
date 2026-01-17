@@ -1,26 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { format, addDays } from 'date-fns';
-import { CalendarIcon, Hotel, Car } from 'lucide-react';
+import { Calendar, MapPin, Users, Home, Search, ChevronDown } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
+import { Header } from '@/components/booking';
 import { LocationAutocomplete } from '@/components/LocationAutocomplete';
 import { Location } from '@/types/location';
-import { cn } from '@/lib/utils';
 
-export default function HomePage() {
+export default function BookingPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'hotels' | 'cars'>('hotels');
   const [destination, setDestination] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [checkIn, setCheckIn] = useState<Date | undefined>(undefined);
   const [checkOut, setCheckOut] = useState<Date | undefined>(undefined);
-  const [rooms, setRooms] = useState('1');
-  const [guests, setGuests] = useState('2');
+  const [rooms, setRooms] = useState(1);
+  const [guests, setGuests] = useState(2);
   const [showCheckInPicker, setShowCheckInPicker] = useState(false);
   const [showCheckOutPicker, setShowCheckOutPicker] = useState(false);
+  const [showRoomsDropdown, setShowRoomsDropdown] = useState(false);
+  const [showGuestsDropdown, setShowGuestsDropdown] = useState(false);
 
   const tomorrow = addDays(new Date(), 1);
   const minCheckOut = checkIn ? addDays(checkIn, 1) : addDays(new Date(), 2);
@@ -35,210 +36,404 @@ export default function HomePage() {
       location: JSON.stringify(selectedLocation),
       checkIn: format(checkIn, 'yyyy-MM-dd'),
       checkOut: format(checkOut, 'yyyy-MM-dd'),
-      rooms,
-      guests,
+      rooms: rooms.toString(),
+      guests: guests.toString(),
     });
 
     router.push(`/results?${params.toString()}`);
   };
 
+  const inputContainerStyle: React.CSSProperties = {
+    background: 'hsl(30 20% 96%)',
+    border: '1px solid hsl(30 15% 88%)',
+    borderRadius: '12px',
+    padding: '14px 18px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    transition: 'all 0.3s ease',
+    cursor: 'pointer',
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontFamily: '"Inter", system-ui, sans-serif',
+    fontSize: '10px',
+    fontWeight: 500,
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase' as const,
+    color: 'hsl(30 15% 45%)',
+    marginBottom: '4px',
+  };
+
+  const valueStyle: React.CSSProperties = {
+    fontFamily: '"Inter", system-ui, sans-serif',
+    fontSize: '14px',
+    fontWeight: 400,
+    color: 'hsl(30 20% 15%)',
+  };
+
+  const iconStyle: React.CSSProperties = {
+    width: '18px',
+    height: '18px',
+    color: 'hsl(15 55% 70%)',
+    flexShrink: 0,
+  };
+
+  const dropdownStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: 'calc(100% + 8px)',
+    left: 0,
+    right: 0,
+    background: 'hsl(30 25% 98%)',
+    border: '1px solid hsl(30 15% 88%)',
+    borderRadius: '10px',
+    padding: '6px',
+    zIndex: 50,
+    boxShadow: '0 4px 16px hsl(30 20% 15% / 0.1)',
+  };
+
+  const dropdownItemStyle = (isSelected: boolean): React.CSSProperties => ({
+    padding: '10px 14px',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontFamily: '"Inter", system-ui, sans-serif',
+    fontSize: '14px',
+    fontWeight: 400,
+    color: 'hsl(30 20% 15%)',
+    background: isSelected ? 'hsl(15 55% 70% / 0.15)' : 'transparent',
+    transition: 'background 0.2s ease',
+  });
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="bg-white py-16 px-4">
-        <div className="container mx-auto max-w-5xl text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3">
-            Find Your Perfect Stay or Ride
+    <div style={{ minHeight: '100vh', background: 'hsl(30 25% 98%)' }}>
+      <Header showModeToggle={true} />
+
+      {/* Main Content */}
+      <main style={{ paddingTop: '80px', paddingBottom: '40px' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 16px' }}>
+          {/* Title */}
+          <h1 style={{
+            fontFamily: '"Inter", system-ui, sans-serif',
+            fontSize: '28px',
+            fontWeight: 300,
+            letterSpacing: '0.02em',
+            color: 'hsl(30 20% 15%)',
+            marginBottom: '32px',
+            textAlign: 'center',
+          }}>
+            Find Your Perfect Stay
           </h1>
-          <p className="text-lg text-gray-600">
-            Search thousands of hotels and rental cars worldwide
-          </p>
-        </div>
-      </section>
 
-      {/* Search Form */}
-      <main className="container mx-auto px-4 -mt-8 pb-20">
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
-            {/* Tabs */}
-            <div className="flex gap-4 mb-6 border-b border-gray-200">
-              <button
-                onClick={() => setActiveTab('hotels')}
-                className={cn(
-                  "flex items-center gap-2 px-6 py-3 border-b-2 transition-colors font-medium",
-                  activeTab === 'hotels'
-                    ? "border-[#D9A021] text-gray-900"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                )}
-              >
-                <Hotel className="h-5 w-5" />
-                Hotels
-              </button>
-              <button
-                onClick={() => setActiveTab('cars')}
-                className={cn(
-                  "flex items-center gap-2 px-6 py-3 border-b-2 transition-colors font-medium",
-                  activeTab === 'cars'
-                    ? "border-[#D9A021] text-gray-900"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                )}
-              >
-                <Car className="h-5 w-5" />
-                Cars
-              </button>
-            </div>
-
-            {activeTab === 'hotels' && (
-              <div className="space-y-4">
-                {/* Destination */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Destination
-                  </label>
-                  <LocationAutocomplete
-                    value={destination}
-                    onChange={setDestination}
-                    onSelect={(location) => {
-                      setSelectedLocation(location);
-                    }}
-                    placeholder="City or hotel name"
-                    className="w-full"
-                  />
+          {/* Form Card */}
+          <div style={{
+            background: 'hsl(30 25% 98%)',
+            border: '1px solid hsl(30 15% 90%)',
+            borderRadius: '20px',
+            padding: '28px',
+            boxShadow: '0 8px 32px hsl(30 20% 15% / 0.08)',
+          }}>
+            {/* Form Grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+              gap: '14px',
+              marginBottom: '20px',
+            }}>
+              {/* Destination Input - spans 2 columns */}
+              <div style={{ gridColumn: 'span 2' }}>
+                <div
+                  style={inputContainerStyle}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'hsl(15 55% 70%)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px hsl(15 55% 70% / 0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'hsl(30 15% 88%)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <MapPin style={iconStyle} />
+                  <div style={{ flex: 1 }}>
+                    <div style={labelStyle}>Destination</div>
+                    <LocationAutocomplete
+                      value={destination}
+                      onChange={setDestination}
+                      onSelect={(location) => {
+                        setSelectedLocation(location);
+                      }}
+                      placeholder="City or hotel name"
+                      className="w-full"
+                    />
+                  </div>
                 </div>
+              </div>
 
-                {/* Dates */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  {/* Check-in Date */}
-                  <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Check-in
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowCheckInPicker(!showCheckInPicker);
+              {/* Check In Date */}
+              <div style={{ position: 'relative' }}>
+                <div
+                  style={inputContainerStyle}
+                  onClick={() => {
+                    setShowCheckInPicker(!showCheckInPicker);
+                    setShowCheckOutPicker(false);
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'hsl(15 55% 70%)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px hsl(15 55% 70% / 0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'hsl(30 15% 88%)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <Calendar style={iconStyle} />
+                  <div style={{ flex: 1 }}>
+                    <div style={labelStyle}>Check In</div>
+                    <div style={valueStyle}>
+                      {checkIn ? format(checkIn, 'MMM dd, yyyy') : 'Select date'}
+                    </div>
+                  </div>
+                </div>
+                {showCheckInPicker && (
+                  <div style={{
+                    position: 'absolute',
+                    zIndex: 50,
+                    marginTop: '8px',
+                    background: 'white',
+                    border: '1px solid hsl(30 15% 88%)',
+                    borderRadius: '12px',
+                    boxShadow: '0 8px 24px hsl(30 20% 15% / 0.12)',
+                    padding: '16px',
+                  }}>
+                    <DayPicker
+                      mode="single"
+                      selected={checkIn}
+                      onSelect={(date) => {
+                        setCheckIn(date);
+                        setShowCheckInPicker(false);
+                        if (checkOut && date && checkOut <= date) {
+                          setCheckOut(addDays(date, 1));
+                        }
+                      }}
+                      disabled={{ before: tomorrow }}
+                      className="bellhopping-calendar"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Check Out Date */}
+              <div style={{ position: 'relative' }}>
+                <div
+                  style={{
+                    ...inputContainerStyle,
+                    opacity: checkIn ? 1 : 0.6,
+                    cursor: checkIn ? 'pointer' : 'not-allowed',
+                  }}
+                  onClick={() => {
+                    if (checkIn) {
+                      setShowCheckOutPicker(!showCheckOutPicker);
+                      setShowCheckInPicker(false);
+                    }
+                  }}
+                  onMouseEnter={(e) => {
+                    if (checkIn) {
+                      e.currentTarget.style.borderColor = 'hsl(15 55% 70%)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px hsl(15 55% 70% / 0.15)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'hsl(30 15% 88%)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <Calendar style={iconStyle} />
+                  <div style={{ flex: 1 }}>
+                    <div style={labelStyle}>Check Out</div>
+                    <div style={valueStyle}>
+                      {checkOut ? format(checkOut, 'MMM dd, yyyy') : 'Select date'}
+                    </div>
+                  </div>
+                </div>
+                {showCheckOutPicker && checkIn && (
+                  <div style={{
+                    position: 'absolute',
+                    zIndex: 50,
+                    marginTop: '8px',
+                    background: 'white',
+                    border: '1px solid hsl(30 15% 88%)',
+                    borderRadius: '12px',
+                    boxShadow: '0 8px 24px hsl(30 20% 15% / 0.12)',
+                    padding: '16px',
+                  }}>
+                    <DayPicker
+                      mode="single"
+                      selected={checkOut}
+                      onSelect={(date) => {
+                        setCheckOut(date);
                         setShowCheckOutPicker(false);
                       }}
-                      className={cn(
-                        "w-full px-4 py-2.5 border border-gray-300 rounded-md text-left bg-white hover:border-gray-400 focus:outline-none focus:border-[#2C5F63] transition-colors flex items-center gap-2",
-                        !checkIn && "text-gray-400"
-                      )}
-                    >
-                      <CalendarIcon className="h-4 w-4 text-gray-400" />
-                      {checkIn ? format(checkIn, 'MMMM do, yyyy') : 'Select date'}
-                    </button>
-                    {showCheckInPicker && (
-                      <div className="absolute z-50 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl p-4">
-                        <DayPicker
-                          mode="single"
-                          selected={checkIn}
-                          onSelect={(date) => {
-                            setCheckIn(date);
-                            setShowCheckInPicker(false);
-                            if (checkOut && date && checkOut <= date) {
-                              setCheckOut(addDays(date, 1));
-                            }
-                          }}
-                          disabled={{ before: tomorrow }}
-                          className="bellhopping-calendar"
-                        />
-                      </div>
-                    )}
+                      disabled={{ before: minCheckOut }}
+                      className="bellhopping-calendar"
+                    />
                   </div>
+                )}
+              </div>
 
-                  {/* Check-out Date */}
-                  <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Check-out
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowCheckOutPicker(!showCheckOutPicker);
-                        setShowCheckInPicker(false);
-                      }}
-                      disabled={!checkIn}
-                      className={cn(
-                        "w-full px-4 py-2.5 border border-gray-300 rounded-md text-left bg-white hover:border-gray-400 focus:outline-none focus:border-[#2C5F63] transition-colors flex items-center gap-2 disabled:bg-gray-100 disabled:cursor-not-allowed",
-                        !checkOut && "text-gray-400"
-                      )}
-                    >
-                      <CalendarIcon className="h-4 w-4 text-gray-400" />
-                      {checkOut ? format(checkOut, 'MMMM do, yyyy') : 'Select date'}
-                    </button>
-                    {showCheckOutPicker && checkIn && (
-                      <div className="absolute z-50 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl p-4">
-                        <DayPicker
-                          mode="single"
-                          selected={checkOut}
-                          onSelect={(date) => {
-                            setCheckOut(date);
-                            setShowCheckOutPicker(false);
-                          }}
-                          disabled={{ before: minCheckOut }}
-                          className="bellhopping-calendar"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Rooms and Guests */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="rooms" className="block text-sm font-medium text-gray-700 mb-2">
-                      Rooms
-                    </label>
-                    <select
-                      id="rooms"
-                      value={rooms}
-                      onChange={(e) => setRooms(e.target.value)}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-md bg-white hover:border-gray-400 focus:outline-none focus:border-[#2C5F63] transition-colors"
-                    >
-                      {[1, 2, 3, 4, 5].map((num) => (
-                        <option key={num} value={num.toString()}>
-                          {num} Room{num > 1 ? 's' : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="guests" className="block text-sm font-medium text-gray-700 mb-2">
-                      Guests
-                    </label>
-                    <select
-                      id="guests"
-                      value={guests}
-                      onChange={(e) => setGuests(e.target.value)}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-md bg-white hover:border-gray-400 focus:outline-none focus:border-[#2C5F63] transition-colors"
-                    >
-                      {[1, 2, 3, 4, 5, 6].map((num) => (
-                        <option key={num} value={num.toString()}>
-                          {num} Guest{num > 1 ? 's' : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Search Button */}
-                <button
-                  onClick={handleSearch}
-                  disabled={!selectedLocation || !checkIn || !checkOut}
-                  className="w-full py-3.5 px-6 bg-[#2C5F63] text-white font-medium rounded-md hover:bg-[#2C5F63]/90 focus:outline-none focus:ring-2 focus:ring-[#2C5F63]/50 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all"
+              {/* Rooms Dropdown */}
+              <div style={{ position: 'relative' }}>
+                <div
+                  style={inputContainerStyle}
+                  onClick={() => {
+                    setShowRoomsDropdown(!showRoomsDropdown);
+                    setShowGuestsDropdown(false);
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'hsl(15 55% 70%)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px hsl(15 55% 70% / 0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'hsl(30 15% 88%)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
                 >
-                  Search Hotels
-                </button>
-              </div>
-            )}
+                  <Home style={iconStyle} />
+                  <div style={{ flex: 1 }}>
+                    <div style={labelStyle}>Rooms</div>
+                    <div style={valueStyle}>{rooms} {rooms === 1 ? 'Room' : 'Rooms'}</div>
+                  </div>
+                  <ChevronDown style={{ ...iconStyle, color: 'hsl(30 15% 60%)' }} />
+                </div>
 
-            {activeTab === 'cars' && (
-              <div className="py-12 text-center text-gray-500">
-                <Car className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-                <p>Car rental search coming soon...</p>
+                {showRoomsDropdown && (
+                  <div style={dropdownStyle}>
+                    {[1, 2, 3, 4, 5].map((num) => (
+                      <div
+                        key={num}
+                        onClick={() => {
+                          setRooms(num);
+                          setShowRoomsDropdown(false);
+                        }}
+                        style={dropdownItemStyle(rooms === num)}
+                        onMouseEnter={(e) => {
+                          if (rooms !== num) {
+                            e.currentTarget.style.background = 'hsl(30 20% 94%)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = rooms === num
+                            ? 'hsl(15 55% 70% / 0.15)'
+                            : 'transparent';
+                        }}
+                      >
+                        {num} {num === 1 ? 'Room' : 'Rooms'}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+
+              {/* Guests Dropdown */}
+              <div style={{ position: 'relative' }}>
+                <div
+                  style={inputContainerStyle}
+                  onClick={() => {
+                    setShowGuestsDropdown(!showGuestsDropdown);
+                    setShowRoomsDropdown(false);
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'hsl(15 55% 70%)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px hsl(15 55% 70% / 0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'hsl(30 15% 88%)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <Users style={iconStyle} />
+                  <div style={{ flex: 1 }}>
+                    <div style={labelStyle}>Guests</div>
+                    <div style={valueStyle}>{guests} {guests === 1 ? 'Guest' : 'Guests'}</div>
+                  </div>
+                  <ChevronDown style={{ ...iconStyle, color: 'hsl(30 15% 60%)' }} />
+                </div>
+
+                {showGuestsDropdown && (
+                  <div style={dropdownStyle}>
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                      <div
+                        key={num}
+                        onClick={() => {
+                          setGuests(num);
+                          setShowGuestsDropdown(false);
+                        }}
+                        style={dropdownItemStyle(guests === num)}
+                        onMouseEnter={(e) => {
+                          if (guests !== num) {
+                            e.currentTarget.style.background = 'hsl(30 20% 94%)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = guests === num
+                            ? 'hsl(15 55% 70% / 0.15)'
+                            : 'transparent';
+                        }}
+                      >
+                        {num} {num === 1 ? 'Guest' : 'Guests'}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Search Button */}
+            <button
+              onClick={handleSearch}
+              disabled={!selectedLocation || !checkIn || !checkOut}
+              style={{
+                width: '100%',
+                padding: '16px 28px',
+                background: (!selectedLocation || !checkIn || !checkOut)
+                  ? 'hsl(30 15% 85%)'
+                  : 'linear-gradient(135deg, hsl(15 55% 70%) 0%, hsl(25 50% 65%) 100%)',
+                border: 'none',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
+                cursor: (!selectedLocation || !checkIn || !checkOut) ? 'not-allowed' : 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: (!selectedLocation || !checkIn || !checkOut)
+                  ? 'none'
+                  : '0 4px 16px hsl(15 55% 70% / 0.3)',
+                opacity: (!selectedLocation || !checkIn || !checkOut) ? 0.6 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (selectedLocation && checkIn && checkOut) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 24px hsl(15 55% 70% / 0.4)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedLocation && checkIn && checkOut) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 16px hsl(15 55% 70% / 0.3)';
+                }
+              }}
+            >
+              <Search style={{ width: '18px', height: '18px', color: 'hsl(30 25% 98%)' }} />
+              <span style={{
+                fontFamily: '"Inter", system-ui, sans-serif',
+                fontSize: '14px',
+                fontWeight: 500,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase' as const,
+                color: 'hsl(30 25% 98%)',
+              }}>
+                Search Hotels
+              </span>
+            </button>
           </div>
         </div>
       </main>

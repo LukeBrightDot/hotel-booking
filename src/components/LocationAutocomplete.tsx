@@ -28,12 +28,13 @@ export function LocationAutocomplete({
   });
   const [isLoading, setIsLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [justSelected, setJustSelected] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debouncedValue = useDebounce(value, 200);
 
   // Fetch autocomplete results
   useEffect(() => {
-    if (debouncedValue.length >= 2) {
+    if (debouncedValue.length >= 2 && !justSelected) {
       setIsLoading(true);
       fetch(`/api/locations/autocomplete?q=${encodeURIComponent(debouncedValue)}`)
         .then((res) => res.json())
@@ -50,7 +51,7 @@ export function LocationAutocomplete({
       setResults({ airports: [], cities: [], hotels: [] });
       setIsOpen(false);
     }
-  }, [debouncedValue]);
+  }, [debouncedValue, justSelected]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -89,18 +90,30 @@ export function LocationAutocomplete({
     onSelect(location);
     setIsOpen(false);
     setSelectedIndex(-1);
+    setJustSelected(true);
+  };
+
+  const handleInputChange = (newValue: string) => {
+    onChange(newValue);
+    setJustSelected(false);
+  };
+
+  const handleFocus = () => {
+    if (value.length >= 2 && !justSelected) {
+      setIsOpen(true);
+    }
   };
 
   const getIcon = (type: string) => {
     switch (type) {
       case 'airport':
-        return <Plane className="h-4 w-4" />;
+        return <Plane style={{ width: '16px', height: '16px' }} />;
       case 'city':
-        return <MapPin className="h-4 w-4" />;
+        return <MapPin style={{ width: '16px', height: '16px' }} />;
       case 'hotel':
-        return <Building2 className="h-4 w-4" />;
+        return <Building2 style={{ width: '16px', height: '16px' }} />;
       default:
-        return <MapPin className="h-4 w-4" />;
+        return <MapPin style={{ width: '16px', height: '16px' }} />;
     }
   };
 
@@ -117,28 +130,61 @@ export function LocationAutocomplete({
   let resultIndex = 0;
 
   return (
-    <div ref={wrapperRef} className="relative w-full">
-      <div className="relative">
+    <div ref={wrapperRef} style={{ position: 'relative', width: '100%' }}>
+      <div style={{ position: 'relative' }}>
         <input
           type="text"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          onFocus={() => value.length >= 2 && setIsOpen(true)}
+          onFocus={handleFocus}
           placeholder={placeholder}
-          className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${className}`}
+          style={{
+            width: '100%',
+            background: 'transparent',
+            border: 'none',
+            outline: 'none',
+            padding: 0,
+            fontFamily: '"Inter", system-ui, sans-serif',
+            fontSize: '14px',
+            fontWeight: 400,
+            color: 'hsl(30 20% 15%)',
+          }}
+          className={className}
         />
         {isLoading && (
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+          <div style={{
+            position: 'absolute',
+            right: 0,
+            top: '50%',
+            transform: 'translateY(-50%)',
+          }}>
+            <Loader2 style={{ width: '16px', height: '16px', color: 'hsl(15 55% 70%)' }} className="animate-spin" />
           </div>
         )}
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-96 overflow-y-auto">
+        <div style={{
+          position: 'absolute',
+          zIndex: 50,
+          width: '100%',
+          marginTop: '8px',
+          background: 'hsl(30 25% 98%)',
+          border: '1px solid hsl(30 15% 88%)',
+          borderRadius: '12px',
+          boxShadow: '0 8px 24px hsl(30 20% 15% / 0.12)',
+          maxHeight: '400px',
+          overflowY: 'auto',
+        }}>
           {!hasResults && debouncedValue.length >= 2 && !isLoading && (
-            <div className="px-4 py-3 text-sm text-gray-500 text-center">
+            <div style={{
+              padding: '12px 16px',
+              textAlign: 'center',
+              fontFamily: '"Inter", system-ui, sans-serif',
+              fontSize: '13px',
+              color: 'hsl(30 15% 55%)',
+            }}>
               No results found
             </div>
           )}
@@ -146,8 +192,18 @@ export function LocationAutocomplete({
           {/* Airports */}
           {results.airports.length > 0 && (
             <div>
-              <div className="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50 border-b">
-                AIRPORTS
+              <div style={{
+                padding: '10px 16px',
+                fontFamily: '"Inter", system-ui, sans-serif',
+                fontSize: '10px',
+                fontWeight: 600,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase' as const,
+                color: 'hsl(30 15% 55%)',
+                background: 'hsl(30 20% 94%)',
+                borderBottom: '1px solid hsl(30 15% 88%)',
+              }}>
+                Airports
               </div>
               {results.airports.map((location) => {
                 const currentIndex = resultIndex++;
@@ -155,16 +211,47 @@ export function LocationAutocomplete({
                   <button
                     key={location.id}
                     onClick={() => handleSelect(location)}
-                    className={`w-full px-4 py-2 text-left hover:bg-blue-50 flex items-center gap-3 ${
-                      currentIndex === selectedIndex ? 'bg-blue-50' : ''
-                    }`}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      textAlign: 'left',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      border: 'none',
+                      background: currentIndex === selectedIndex ? 'hsl(15 55% 70% / 0.1)' : 'transparent',
+                      cursor: 'pointer',
+                      transition: 'background 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (currentIndex !== selectedIndex) {
+                        e.currentTarget.style.background = 'hsl(30 20% 94%)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = currentIndex === selectedIndex
+                        ? 'hsl(15 55% 70% / 0.1)'
+                        : 'transparent';
+                    }}
                   >
-                    <div className="text-gray-400">{getIcon(location.type)}</div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-900">
+                    <div style={{ color: 'hsl(15 55% 70%)' }}>
+                      {getIcon(location.type)}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{
+                        fontFamily: '"Inter", system-ui, sans-serif',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        color: 'hsl(30 20% 15%)',
+                        marginBottom: '2px',
+                      }}>
                         {location.name}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div style={{
+                        fontFamily: '"Inter", system-ui, sans-serif',
+                        fontSize: '12px',
+                        color: 'hsl(30 15% 55%)',
+                      }}>
                         {location.code} · {getLocationLabel(location)}
                       </div>
                     </div>
@@ -177,8 +264,19 @@ export function LocationAutocomplete({
           {/* Cities */}
           {results.cities.length > 0 && (
             <div>
-              <div className="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50 border-b border-t">
-                CITIES
+              <div style={{
+                padding: '10px 16px',
+                fontFamily: '"Inter", system-ui, sans-serif',
+                fontSize: '10px',
+                fontWeight: 600,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase' as const,
+                color: 'hsl(30 15% 55%)',
+                background: 'hsl(30 20% 94%)',
+                borderTop: '1px solid hsl(30 15% 88%)',
+                borderBottom: '1px solid hsl(30 15% 88%)',
+              }}>
+                Cities
               </div>
               {results.cities.map((location) => {
                 const currentIndex = resultIndex++;
@@ -186,16 +284,47 @@ export function LocationAutocomplete({
                   <button
                     key={location.id}
                     onClick={() => handleSelect(location)}
-                    className={`w-full px-4 py-2 text-left hover:bg-blue-50 flex items-center gap-3 ${
-                      currentIndex === selectedIndex ? 'bg-blue-50' : ''
-                    }`}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      textAlign: 'left',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      border: 'none',
+                      background: currentIndex === selectedIndex ? 'hsl(15 55% 70% / 0.1)' : 'transparent',
+                      cursor: 'pointer',
+                      transition: 'background 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (currentIndex !== selectedIndex) {
+                        e.currentTarget.style.background = 'hsl(30 20% 94%)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = currentIndex === selectedIndex
+                        ? 'hsl(15 55% 70% / 0.1)'
+                        : 'transparent';
+                    }}
                   >
-                    <div className="text-gray-400">{getIcon(location.type)}</div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-900">
+                    <div style={{ color: 'hsl(15 55% 70%)' }}>
+                      {getIcon(location.type)}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{
+                        fontFamily: '"Inter", system-ui, sans-serif',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        color: 'hsl(30 20% 15%)',
+                        marginBottom: '2px',
+                      }}>
                         {location.name}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div style={{
+                        fontFamily: '"Inter", system-ui, sans-serif',
+                        fontSize: '12px',
+                        color: 'hsl(30 15% 55%)',
+                      }}>
                         {getLocationLabel(location)}
                       </div>
                     </div>
@@ -208,8 +337,19 @@ export function LocationAutocomplete({
           {/* Hotels */}
           {results.hotels.length > 0 && (
             <div>
-              <div className="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50 border-b border-t">
-                HOTELS
+              <div style={{
+                padding: '10px 16px',
+                fontFamily: '"Inter", system-ui, sans-serif',
+                fontSize: '10px',
+                fontWeight: 600,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase' as const,
+                color: 'hsl(30 15% 55%)',
+                background: 'hsl(30 20% 94%)',
+                borderTop: '1px solid hsl(30 15% 88%)',
+                borderBottom: '1px solid hsl(30 15% 88%)',
+              }}>
+                Hotels
               </div>
               {results.hotels.map((location) => {
                 const currentIndex = resultIndex++;
@@ -217,16 +357,47 @@ export function LocationAutocomplete({
                   <button
                     key={location.id}
                     onClick={() => handleSelect(location)}
-                    className={`w-full px-4 py-2 text-left hover:bg-blue-50 flex items-center gap-3 ${
-                      currentIndex === selectedIndex ? 'bg-blue-50' : ''
-                    }`}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      textAlign: 'left',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      border: 'none',
+                      background: currentIndex === selectedIndex ? 'hsl(15 55% 70% / 0.1)' : 'transparent',
+                      cursor: 'pointer',
+                      transition: 'background 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (currentIndex !== selectedIndex) {
+                        e.currentTarget.style.background = 'hsl(30 20% 94%)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = currentIndex === selectedIndex
+                        ? 'hsl(15 55% 70% / 0.1)'
+                        : 'transparent';
+                    }}
                   >
-                    <div className="text-gray-400">{getIcon(location.type)}</div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-900">
+                    <div style={{ color: 'hsl(15 55% 70%)' }}>
+                      {getIcon(location.type)}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{
+                        fontFamily: '"Inter", system-ui, sans-serif',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        color: 'hsl(30 20% 15%)',
+                        marginBottom: '2px',
+                      }}>
                         {location.name}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div style={{
+                        fontFamily: '"Inter", system-ui, sans-serif',
+                        fontSize: '12px',
+                        color: 'hsl(30 15% 55%)',
+                      }}>
                         {getLocationLabel(location)}
                       </div>
                     </div>

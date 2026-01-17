@@ -34,3 +34,10 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+# Luxury verification failure logs
+.luxury-verification-failures.json
+
+# Environment backups and temp files
+.env.backup
+.env.local.backup-*
+.env.tmp

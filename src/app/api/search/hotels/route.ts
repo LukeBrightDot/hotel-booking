@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { searchHotels } from '@/lib/sabre/search';
+import { searchHotels, HotelSearchResult } from '@/lib/sabre/search';
+import { enrichHotelResults, type EnrichedHotelResult } from '@/lib/services/hotel-enricher';
 import { Location } from '@/types/location';
 import { cache, generateSearchCacheKey, CACHE_TTL } from '@/lib/cache';
+import { logSearch, logFailedSearch, generateSessionId } from '@/lib/services/search-logger';
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  const sessionId = generateSessionId(request.headers);
+  let body: any;
+
   try {
-    const body = await request.json();
+    body = await request.json();
     const { location, checkIn, checkOut, rooms, adults, children, radius } = body;
 
     // Validation
@@ -49,14 +55,32 @@ export async function POST(request: NextRequest) {
 
     // Check cache first
     const cacheKey = generateSearchCacheKey(searchParams);
-    const cachedResults = cache.get(cacheKey);
+    const cachedResults = cache.get<EnrichedHotelResult[]>(cacheKey);
 
     if (cachedResults) {
       console.log('✅ Returning cached search results for:', cacheKey);
+      const luxuryCount = cachedResults.filter((h) => h.isLuxury).length;
+      const responseTime = Date.now() - startTime;
+
+      // Log cached search to database
+      await logSearch({
+        sessionId,
+        location: location as Location,
+        checkIn,
+        checkOut,
+        rooms: searchParams.rooms,
+        adults: searchParams.adults,
+        children: searchParams.children,
+        results: cachedResults,
+        responseTime,
+        cached: true,
+      });
+
       return NextResponse.json({
         success: true,
         results: cachedResults,
         count: cachedResults.length,
+        luxuryCount,
         cached: true,
         searchParams: {
           destination: location.name,
@@ -71,18 +95,38 @@ export async function POST(request: NextRequest) {
 
     // Cache miss - perform fresh search
     console.log('⏳ Cache miss - fetching fresh results for:', cacheKey);
-    const results = await searchHotels(searchParams);
+    const rawResults = await searchHotels(searchParams);
 
-    // Store in cache for 10 minutes
-    cache.set(cacheKey, results, CACHE_TTL.SEARCH_RESULTS);
+    // ✨ Enrich results with luxury program data
+    const enrichedResults = enrichHotelResults(rawResults);
 
-    // TODO: Store search in database (SearchLog model)
-    // await prisma.searchLog.create({ ... });
+    // Store ENRICHED results in cache for 10 minutes
+    cache.set(cacheKey, enrichedResults, CACHE_TTL.SEARCH_RESULTS);
+
+    // Calculate luxury stats
+    const luxuryCount = enrichedResults.filter((h) => h.isLuxury).length;
+    const responseTime = Date.now() - startTime;
+    console.log(`✨ Enriched ${enrichedResults.length} hotels - ${luxuryCount} luxury properties (${responseTime}ms)`);
+
+    // Log search to database
+    await logSearch({
+      sessionId,
+      location: location as Location,
+      checkIn,
+      checkOut,
+      rooms: searchParams.rooms,
+      adults: searchParams.adults,
+      children: searchParams.children,
+      results: enrichedResults,
+      responseTime,
+      cached: false,
+    });
 
     return NextResponse.json({
       success: true,
-      results,
-      count: results.length,
+      results: enrichedResults,
+      count: enrichedResults.length,
+      luxuryCount,
       cached: false,
       searchParams: {
         destination: location.name,
@@ -95,6 +139,27 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Hotel search API error:', error);
+    const responseTime = Date.now() - startTime;
+
+    // Log failed search to database
+    if (body?.location && body?.checkIn && body?.checkOut) {
+      try {
+        await logFailedSearch(
+          sessionId,
+          body.location as Location,
+          body.checkIn,
+          body.checkOut,
+          body.rooms || 1,
+          body.adults || 2,
+          body.children || 0,
+          error instanceof Error ? error : new Error('Unknown error'),
+          responseTime
+        );
+      } catch (logError) {
+        console.error('Failed to log error to database:', logError);
+      }
+    }
+
     return NextResponse.json(
       {
         error: 'Hotel search failed',
