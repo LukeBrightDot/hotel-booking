@@ -84,6 +84,37 @@ export const ResortCard: React.FC<ResortCardProps> = ({
             className="absolute inset-0"
             style={{ background: 'linear-gradient(to top, hsl(30 20% 6% / 0.6), transparent)' }}
           />
+
+          {/* Chain Badge Overlay on Image */}
+          {resort.chainCode && resort.chainName && (
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '0.75rem',
+                left: '0.75rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '0.375rem 0.625rem',
+                borderRadius: '0.375rem',
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(8px)',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontSize: '0.7rem',
+                  fontWeight: 600,
+                  color: 'hsl(30 20% 25%)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                {resort.chainName}
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -127,35 +158,6 @@ export const ResortCard: React.FC<ResortCardProps> = ({
           {resort.name}
         </h3>
 
-        {/* Chain Badge */}
-        {resort.chainCode && (
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.25rem',
-              padding: '0.25rem 0.5rem',
-              borderRadius: '0.375rem',
-              background: 'hsl(30 20% 94%)',
-              alignSelf: 'flex-start',
-              marginTop: '-0.25rem',
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "'Inter', system-ui, sans-serif",
-                fontSize: '0.7rem',
-                fontWeight: 500,
-                color: 'hsl(30 15% 45%)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-              }}
-            >
-              {resort.chainName || resort.chainCode}
-            </span>
-          </div>
-        )}
-
         {/* Luxury Badges */}
         {resort.isLuxury && resort.luxuryPrograms && resort.luxuryPrograms.length > 0 && (
           <div style={{ marginTop: '-0.25rem', marginBottom: '0.25rem' }}>
@@ -168,19 +170,22 @@ export const ResortCard: React.FC<ResortCardProps> = ({
           </div>
         )}
 
-        <p
-          style={{
-            fontSize: '0.875rem',
-            color: 'hsl(30 15% 45%)',
-            lineHeight: 1.6,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden'
-          }}
-        >
-          {resort.description}
-        </p>
+        {/* Hide generic description - only show if it's unique and not the auto-generated text */}
+        {resort.description && !resort.description.startsWith('Experience luxury at') && (
+          <p
+            style={{
+              fontSize: '0.875rem',
+              color: 'hsl(30 15% 45%)',
+              lineHeight: 1.6,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
+            }}
+          >
+            {resort.description}
+          </p>
+        )}
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', paddingTop: '0.5rem' }}>
           {resort.amenities.slice(0, 3).map((amenity, i) => (
