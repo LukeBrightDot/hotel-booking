@@ -72,7 +72,7 @@ export async function logSearch(params: SearchLogParams): Promise<string | null>
       data: {
         sessionId,
         searchParams: {
-          location,
+          location: location as any,
           checkIn,
           checkOut,
           rooms,
@@ -82,7 +82,7 @@ export async function logSearch(params: SearchLogParams): Promise<string | null>
           cached,
           luxuryCount,
           luxuryPercentage: Math.round(luxuryPercentage),
-        },
+        } as any,
         destination: location.name,
         checkIn: new Date(checkIn),
         checkOut: new Date(checkOut),
@@ -160,13 +160,13 @@ export async function logFailedSearch(
       data: {
         sessionId,
         searchParams: {
-          location,
+          location: location as any,
           checkIn,
           checkOut,
           rooms,
           adults,
           children,
-        },
+        } as any,
         destination: location.name,
         checkIn: new Date(checkIn),
         checkOut: new Date(checkOut),
