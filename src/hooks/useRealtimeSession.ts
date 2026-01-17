@@ -20,9 +20,13 @@ interface HotelSearchResult {
   starRating: number;
   lowestRate: number;
   currency: string;
-  distance?: string;
-  amenities?: string[];
+  distance?: number;
+  amenities?: Array<{ code: string; description: string }>;
   imageUrl?: string;
+  luxuryPrograms?: any[];
+  isLuxury?: boolean;
+  chainCode?: string | null;
+  chainName?: string | null;
 }
 
 interface UseRealtimeSessionOptions {

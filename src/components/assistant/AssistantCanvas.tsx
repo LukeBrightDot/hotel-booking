@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { VoiceAssistantLayout, type DemoState, type Resort } from '@/components/voice';
 import { useRealtimeSession } from '@/hooks/useRealtimeSession';
 import { SearchHotelsArgs } from '@/lib/assistant/tools';
+import type { EnrichedHotelResult } from '@/lib/services/hotel-enricher';
 
 interface HotelSearchResult {
   hotelCode: string;
@@ -13,9 +14,13 @@ interface HotelSearchResult {
   starRating: number;
   lowestRate: number;
   currency: string;
-  distance?: string;
-  amenities?: string[];
+  distance?: number;
+  amenities?: Array<{ code: string; description: string }>;
   imageUrl?: string;
+  luxuryPrograms?: any[];
+  isLuxury?: boolean;
+  chainCode?: string | null;
+  chainName?: string | null;
 }
 
 export function AssistantCanvas() {
@@ -167,11 +172,22 @@ export function AssistantCanvas() {
       id: hotel.hotelCode,
       name: hotel.hotelName,
       location: hotel.address,
-      description: hotel.amenities?.slice(0, 2).join(', ') || 'Luxury accommodations',
+      description: hotel.amenities?.slice(0, 2).map(a => a.description).join(', ') || 'Luxury accommodations',
       pricePerNight: hotel.lowestRate > 0 ? `$${hotel.lowestRate.toFixed(0)}` : 'Call',
       rating: hotel.starRating,
-      amenities: hotel.amenities || [],
+      amenities: hotel.amenities?.map(a => a.description) || [],
       imageUrl: hotel.imageUrl,
+
+      // ADD: Luxury fields
+      luxuryPrograms: hotel.luxuryPrograms,
+      isLuxury: hotel.isLuxury,
+
+      // ADD: Chain info
+      chainCode: hotel.chainCode,
+      chainName: hotel.chainName,
+
+      // ADD: Distance
+      distance: hotel.distance,
     }));
   }, [searchResults]);
 

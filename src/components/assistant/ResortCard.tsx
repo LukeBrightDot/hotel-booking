@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import { LuxuryBadgeGroup } from '@/components/hotel/LuxuryBadge';
+import type { LuxuryProgram } from '@/lib/data/luxury-mapping';
 
 export interface Resort {
   id: string;
@@ -11,6 +13,13 @@ export interface Resort {
   rating: number;
   amenities: string[];
   imageUrl?: string;
+
+  // NEW FIELDS:
+  luxuryPrograms?: LuxuryProgram[];
+  isLuxury?: boolean;
+  distance?: number;
+  chainCode?: string | null;
+  chainName?: string | null;
 }
 
 interface ResortCardProps {
@@ -50,15 +59,41 @@ export const ResortCard: React.FC<ResortCardProps> = ({
 
       {/* Resort Info */}
       <div className="space-y-3">
-        {/* Location tag */}
-        <span className="text-elegant text-muted-foreground">
-          {resort.location}
-        </span>
+        {/* Location tag with distance */}
+        <div className="flex items-center gap-2">
+          <span className="text-elegant text-muted-foreground">
+            {resort.location}
+          </span>
+          {resort.distance && (
+            <span className="text-xs text-muted-foreground/70">
+              • {resort.distance.toFixed(1)} mi
+            </span>
+          )}
+        </div>
 
         {/* Name */}
         <h3 className="font-serif text-xl font-light text-foreground group-hover:text-primary transition-colors">
           {resort.name}
         </h3>
+
+        {/* Chain Badge */}
+        {resort.chainCode && (
+          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-secondary/60 text-secondary-foreground text-xs font-medium uppercase tracking-wide">
+            {resort.chainName || resort.chainCode}
+          </div>
+        )}
+
+        {/* Luxury Badges */}
+        {resort.isLuxury && resort.luxuryPrograms && resort.luxuryPrograms.length > 0 && (
+          <div className="pt-1">
+            <LuxuryBadgeGroup
+              programs={resort.luxuryPrograms}
+              size="sm"
+              maxVisible={2}
+              animated={false}
+            />
+          </div>
+        )}
 
         {/* Description */}
         {resort.description && (

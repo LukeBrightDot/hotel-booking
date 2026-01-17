@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Loader2, SlidersHorizontal, X } from 'lucide-react';
 import { Header } from '@/components/booking';
@@ -19,6 +19,8 @@ function ResultsContent() {
   const [priceRange, setPriceRange] = useState(Infinity);
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedChains, setSelectedChains] = useState<string[]>([]);
+  const [maxDistance, setMaxDistance] = useState<number>(Infinity);
 
   useEffect(() => {
     const fetchHotels = async () => {
@@ -79,24 +81,36 @@ function ResultsContent() {
 
   // Convert EnrichedHotelResult to Resort format
   const convertToResort = (hotel: EnrichedHotelResult): Resort => {
-    const amenities: string[] = [];
-
-    // Add some common amenities based on hotel data
-    if (hotel.starRating && hotel.starRating >= 4) amenities.push('Luxury');
-    amenities.push('WiFi', 'Room Service');
+    // Use ACTUAL amenities from Sabre instead of hardcoded
+    const amenities = hotel.amenities?.map((a: any) => a.description) || [];
 
     return {
       id: hotel.hotelCode,
       name: hotel.hotelName,
-      location: hotel.address?.city
+
+      // ADD: Full address with street (fallback to city if no street)
+      location: hotel.address?.addressLine1
+        ? `${hotel.address.addressLine1}, ${hotel.address.city}${hotel.address.state ? ', ' + hotel.address.state : ''}`
+        : hotel.address?.city
         ? `${hotel.address.city}${hotel.address.state ? ', ' + hotel.address.state : ''}`
         : hotel.address?.country || 'Location',
+
+      // ADD: Distance field
+      distance: hotel.distance,
+
+      // ADD: Chain info
+      chainCode: hotel.chainCode,
+      chainName: hotel.chainName,
+
       description: hotel.description || `Experience luxury at ${hotel.hotelName}`,
       pricePerNight: hotel.lowestRate && hotel.lowestRate > 0
         ? `$${Math.round(hotel.lowestRate)}`
         : 'Contact for pricing',
       rating: hotel.starRating || 0,
+
+      // Use ACTUAL amenities (not hardcoded)
       amenities,
+
       imageUrl: hotel.thumbnail,
       luxuryPrograms: hotel.luxuryPrograms,
       isLuxury: hotel.isLuxury,
@@ -112,14 +126,48 @@ function ResultsContent() {
   // Round up to nearest 100 for cleaner slider values
   const dynamicMaxPrice = Math.max(1000, Math.ceil(maxHotelPrice / 100) * 100);
 
+  // Calculate unique chains for filter
+  const uniqueChains = useMemo(() => {
+    const chainMap = new Map<string, { code: string; name: string }>();
+    hotels.forEach(hotel => {
+      if (hotel.chainCode) {
+        chainMap.set(hotel.chainCode, {
+          code: hotel.chainCode,
+          name: hotel.chainName || hotel.chainCode,
+        });
+      }
+    });
+    return Array.from(chainMap.values());
+  }, [hotels]);
+
+  const toggleChain = (chainCode: string) => {
+    setSelectedChains(prev =>
+      prev.includes(chainCode) ? prev.filter(c => c !== chainCode) : [...prev, chainCode]
+    );
+  };
+
   const filteredHotels = hotels
     .filter((hotel) => {
       const price = hotel.lowestRate || 0;
-      // Only apply price filter if user has set a specific limit
+
+      // Price filter
       if (priceRange !== Infinity && price > priceRange) return false;
+
+      // Star rating filter
       if (selectedRatings.length > 0 && hotel.starRating) {
         if (!selectedRatings.includes(Math.floor(hotel.starRating))) return false;
       }
+
+      // Chain filter
+      if (selectedChains.length > 0 && hotel.chainCode) {
+        if (!selectedChains.includes(hotel.chainCode)) return false;
+      }
+
+      // Distance filter
+      if (maxDistance !== Infinity && hotel.distance) {
+        if (hotel.distance > maxDistance) return false;
+      }
+
       return true;
     })
     .sort((a, b) => {
@@ -334,6 +382,93 @@ function ResultsContent() {
                         </span>
                       </label>
                     ))}
+                  </div>
+                </div>
+
+                {/* Chain/Brand Filter */}
+                {uniqueChains.length > 0 && (
+                  <div style={{ marginTop: '32px' }}>
+                    <label style={{
+                      fontFamily: '"Inter", system-ui, sans-serif',
+                      fontSize: '11px',
+                      fontWeight: 500,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      color: 'hsl(30 15% 55%)',
+                      display: 'block',
+                      marginBottom: '12px',
+                    }}>
+                      Hotel Chain
+                    </label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {uniqueChains.map((chain) => (
+                        <label
+                          key={chain.code}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedChains.includes(chain.code)}
+                            onChange={() => toggleChain(chain.code)}
+                            style={{
+                              width: '18px',
+                              height: '18px',
+                              cursor: 'pointer',
+                              accentColor: 'hsl(15 55% 70%)',
+                            }}
+                          />
+                          <span style={{
+                            fontFamily: '"Inter", system-ui, sans-serif',
+                            fontSize: '14px',
+                            color: 'hsl(30 20% 25%)',
+                          }}>
+                            {chain.name}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Distance Filter */}
+                <div style={{ marginTop: '32px' }}>
+                  <label style={{
+                    fontFamily: '"Inter", system-ui, sans-serif',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: 'hsl(30 15% 55%)',
+                    display: 'block',
+                    marginBottom: '12px',
+                  }}>
+                    Max Distance
+                  </label>
+                  <input
+                    type="range"
+                    value={maxDistance === Infinity ? 50 : maxDistance}
+                    onChange={(e) => setMaxDistance(parseInt(e.target.value))}
+                    min="0"
+                    max="50"
+                    step="5"
+                    style={{ width: '100%', marginBottom: '8px' }}
+                  />
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontFamily: '"Inter", system-ui, sans-serif',
+                    fontSize: '13px',
+                    color: 'hsl(30 15% 55%)',
+                  }}>
+                    <span>0 mi</span>
+                    <span style={{ fontWeight: 500, color: 'hsl(15 55% 70%)' }}>
+                      {maxDistance === Infinity ? 'No limit' : `${maxDistance} mi`}
+                    </span>
                   </div>
                 </div>
               </aside>

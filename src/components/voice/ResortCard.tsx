@@ -16,6 +16,11 @@ export interface Resort {
   imageUrl?: string;
   luxuryPrograms?: LuxuryProgram[];
   isLuxury?: boolean;
+
+  // NEW FIELDS:
+  distance?: number;           // Distance in miles
+  chainCode?: string | null;   // Chain code (DT, HH, etc.)
+  chainName?: string | null;   // Full chain name
 }
 
 interface ResortCardProps {
@@ -83,18 +88,32 @@ export const ResortCard: React.FC<ResortCardProps> = ({
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-        <span
-          style={{
-            fontFamily: "'Inter', system-ui, sans-serif",
-            fontWeight: 200,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            fontSize: '0.75rem',
-            color: 'hsl(30 15% 45%)'
-          }}
-        >
-          {resort.location}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span
+            style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontWeight: 200,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              fontSize: '0.75rem',
+              color: 'hsl(30 15% 45%)'
+            }}
+          >
+            {resort.location}
+          </span>
+          {resort.distance && (
+            <span
+              style={{
+                fontFamily: "'Inter', system-ui, sans-serif",
+                fontSize: '0.7rem',
+                color: 'hsl(30 15% 60%)',
+                fontWeight: 300,
+              }}
+            >
+              • {resort.distance.toFixed(1)} mi
+            </span>
+          )}
+        </div>
 
         <h3
           className="group-hover:text-primary transition-colors"
@@ -107,6 +126,35 @@ export const ResortCard: React.FC<ResortCardProps> = ({
         >
           {resort.name}
         </h3>
+
+        {/* Chain Badge */}
+        {resort.chainCode && (
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+              padding: '0.25rem 0.5rem',
+              borderRadius: '0.375rem',
+              background: 'hsl(30 20% 94%)',
+              alignSelf: 'flex-start',
+              marginTop: '-0.25rem',
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "'Inter', system-ui, sans-serif",
+                fontSize: '0.7rem',
+                fontWeight: 500,
+                color: 'hsl(30 15% 45%)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}
+            >
+              {resort.chainName || resort.chainCode}
+            </span>
+          </div>
+        )}
 
         {/* Luxury Badges */}
         {resort.isLuxury && resort.luxuryPrograms && resort.luxuryPrograms.length > 0 && (
