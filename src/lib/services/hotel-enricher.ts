@@ -45,8 +45,8 @@ export interface EnrichedHotelResult {
  * This should match your existing HotelResult type from Prisma/API
  */
 export interface HotelResult {
-  id: string;
-  name: string;
+  hotelCode: string;
+  hotelName: string;
   chainCode?: string | null;
   [key: string]: any; // Allow any other Sabre fields
 }
