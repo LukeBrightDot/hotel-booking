@@ -14,29 +14,10 @@ import { getLuxuryPrograms, type LuxuryProgram } from '@/lib/data/luxury-mapping
  *
  * Extends the base Sabre hotel result with luxury program information
  */
-export interface EnrichedHotelResult {
-  // Original Sabre fields (preserve everything)
-  id: string;
-  name: string;
-  chainCode?: string | null;
-  address?: string;
-  city?: string;
-  postalCode?: string;
-  countryCode?: string;
-  latitude?: number;
-  longitude?: number;
-  starRating?: number;
-  imageUrl?: string;
-  minRate?: number;
-  maxRate?: number;
-  currency?: string;
-
+export interface EnrichedHotelResult extends HotelResult {
   // Enriched fields (added by this service)
   luxuryPrograms: LuxuryProgram[];
   isLuxury: boolean;
-
-  // Allow any other fields from Sabre to pass through
-  [key: string]: any;
 }
 
 /**
@@ -77,7 +58,7 @@ export function enrichHotelResults(
     // Get luxury programs for this hotel (O(1) lookups)
     const luxuryPrograms = getLuxuryPrograms(
       hotel.chainCode,
-      hotel.id
+      hotel.hotelCode
     );
 
     return {

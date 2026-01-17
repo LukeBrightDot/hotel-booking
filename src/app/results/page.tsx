@@ -90,7 +90,7 @@ function ResultsContent() {
       name: hotel.hotelName,
       location: hotel.address?.city
         ? `${hotel.address.city}${hotel.address.state ? ', ' + hotel.address.state : ''}`
-        : hotel.address?.countryName || 'Location',
+        : hotel.address?.country || 'Location',
       description: hotel.description || `Experience luxury at ${hotel.hotelName}`,
       pricePerNight: hotel.lowestRate && hotel.lowestRate > 0
         ? `$${Math.round(hotel.lowestRate)}`
