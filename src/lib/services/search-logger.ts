@@ -110,11 +110,11 @@ export async function logSearch(params: SearchLogParams): Promise<string | null>
             city: String(hotel.address?.city || location.city || ''),
             country: String(hotel.address?.country || location.country || ''),
             coordinates: hotel.coordinates
-              ? {
+              ? ({
                   lat: hotel.coordinates.lat,
                   lng: hotel.coordinates.lng,
-                }
-              : null,
+                } as any)
+              : undefined,
             lowestRate: hotel.lowestRate || null,
             highestRate: hotel.highestRate || null,
             currencyCode: hotel.currencyCode || null,
